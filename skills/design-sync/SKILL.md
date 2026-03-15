@@ -1,14 +1,15 @@
 ---
 name: design-sync
-description: 참고 디자인 URL에서 CSS를 추출하여 현재 코드베이스와 비교/적용한다
-argument-hint: <URL> [페이지경로]
+description: 참고 디자인 URL 또는 캡처 이미지에서 CSS를 추출하여 현재 코드베이스와 비교/적용한다
+argument-hint: <URL|이미지경로> [페이지경로]
 ---
 
-참고 디자인 URL을 받아 5단계 체계적 워크플로우로 CSS를 추출·비교·적용하고, 정량적 싱크율로 검증한다.
+참고 디자인 URL 또는 캡처 이미지를 받아 체계적 워크플로우로 CSS를 추출·비교·적용하고, 정량적 싱크율로 검증한다.
 
 **사용법:**
-- `/design-sync <URL>` — 전체 워크플로우 실행
+- `/design-sync <URL>` — URL 기반 전체 워크플로우 실행 (7단계)
 - `/design-sync <URL> <페이지경로>` — 특정 페이지만
+- `/design-sync --from-image <이미지경로>` — 캡처 이미지 기반 워크플로우 (5단계)
 - `/design-sync --verify-only` — 시각적 회귀 테스트만
 - `/design-sync --tokens-only` — 토큰 추출만
 
@@ -24,23 +25,27 @@ argument-hint: <URL> [페이지경로]
 | 4 | **카드/컨테이너** | `div`(border/bg/rounded), `section` — stat card, 카드 래퍼 |
 | 5 | **폼** | `input`, `select`, `button`, `textarea` — 검색, 필터, 액션 버튼 |
 | 6 | **테이블** | `table`, `thead`, `tbody`, `tr`, `th`, `td` — 행·셀 단위 |
+| 7 | **아이콘** | `svg`, `img[src*=".svg"]`, Lucide/Heroicons 컴포넌트 — 크기, 색상, strokeWidth |
 
-**2. 12개 속성 카테고리를 빠짐없이 추출한다.**
+**2. 15개 속성 카테고리를 빠짐없이 추출한다.**
 
 | # | 카테고리 | 속성 |
 |---|---------|------|
 | 1 | 셀렉터/클래스 | `tag.className` |
 | 2 | 크기 | `width × height` |
 | 3 | 색상 | `color`, `backgroundColor`, `opacity` |
-| 4 | 서체 | `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing` |
-| 5 | 텍스트 | `textAlign`, `textTransform`, `textDecoration`, `whiteSpace`, `verticalAlign` |
+| 4 | 서체 | `fontFamily`, `fontSize`, `fontWeight`, `fontStyle`, `lineHeight`, `letterSpacing` |
+| 5 | 텍스트 | `textAlign`, `textTransform`, `textDecoration`, `whiteSpace`, `verticalAlign`, `textOverflow`, `wordBreak`, `wordWrap` |
 | 6 | 패딩 | `padding` (4방향 축약) |
 | 7 | 마진 | `margin` (4방향 축약) |
-| 8 | 보더 | `border`, `borderRadius`, `outline` |
+| 8 | 보더 | `border`, `borderColor`, `borderWidth`, `borderRadius`, `outline` |
 | 9 | 시각효과 | `boxShadow`, `backgroundImage` |
-| 10 | 레이아웃 | `display`, `flex*`, `grid*`, `gap`, `position`, `overflow` |
-| 11 | 인터랙션 | `cursor`, `transition` |
+| 10 | 레이아웃 | `display`, `flexDirection`, `flexWrap`, `flexGrow/Shrink/Basis`, `alignItems`, `justifyContent`, `gridTemplateColumns/Rows`, `gridColumn/Row`, `placeItems`, `order`, `gap`, `position`, `overflow`, `zIndex` |
+| 11 | 인터랙션 | `cursor`, `transition`, `transitionDuration`, `transitionTimingFunction` |
 | 12 | 접근성 | Contrast ratio, accessible name, ARIA role, keyboard-focusable |
+| 13 | CSS 변수 | `--background`, `--foreground`, `--sidebar`, `--primary` 등 custom properties |
+| 14 | 의사 요소 | `::before`, `::after` — content, 크기, 색상, 위치 |
+| 15 | 아이콘 | `width`, `height`, `color`/`stroke`, `strokeWidth`, `fill` |
 
 **3. 정량적 검증이 필수다.** 수정 전후 싱크율을 측정하여 개선을 숫자로 확인한다.
 
@@ -82,10 +87,11 @@ Figma Sites 등 뷰포트 스케일링이 적용된 사이트에서 정확한 CS
 | 토큰 | 추출 방법 |
 |------|----------|
 | **색상 팔레트** | 모든 고유 `color`/`bgColor` 수집 → 빈도순 정렬 → Tailwind 컬러 매칭 |
-| **타이포그래피** | `fontSize`/`fontWeight`/`lineHeight` 조합별 사용 빈도 |
+| **타이포그래피** | `fontFamily`/`fontSize`/`fontWeight`/`lineHeight`/`letterSpacing` 조합별 사용 빈도 |
 | **간격 체계** | `padding`/`margin`/`gap` 값 분포 → 베이스 유닛(보통 4px) 감지 |
 | **보더** | `borderRadius` 패턴 (sm/md/lg/full) 정리 |
 | **그림자** | `boxShadow` 고유 값 목록 |
+| **CSS 변수** | `:root`/`.dark`에 정의된 `--` custom properties 전체 수집 → 용도별 분류 |
 
 ### 1.3 토큰 출력 포맷
 
@@ -105,10 +111,10 @@ Figma Sites 등 뷰포트 스케일링이 적용된 사이트에서 정확한 CS
       { "value": "oklch(0.556 0 0)", "tailwind": "gray-500", "count": 28, "usage": "descriptions" }
     ],
     "typography": {
-      "h1": { "fontSize": "24px", "fontWeight": "500", "lineHeight": "32px" },
-      "h2": { "fontSize": "20px", "fontWeight": "500", "lineHeight": "28px" },
-      "body": { "fontSize": "14px", "fontWeight": "400", "lineHeight": "20px" },
-      "caption": { "fontSize": "12px", "fontWeight": "500", "lineHeight": "16px" }
+      "h1": { "fontFamily": "Geist Sans", "fontSize": "24px", "fontWeight": "500", "lineHeight": "32px", "letterSpacing": "normal" },
+      "h2": { "fontFamily": "Geist Sans", "fontSize": "20px", "fontWeight": "500", "lineHeight": "28px", "letterSpacing": "normal" },
+      "body": { "fontFamily": "Geist Sans", "fontSize": "14px", "fontWeight": "400", "lineHeight": "20px", "letterSpacing": "normal" },
+      "caption": { "fontFamily": "Geist Sans", "fontSize": "12px", "fontWeight": "500", "lineHeight": "16px", "letterSpacing": "0.05em" }
     },
     "spacing": {
       "baseUnit": "4px",
@@ -119,7 +125,25 @@ Figma Sites 등 뷰포트 스케일링이 적용된 사이트에서 정확한 CS
       "default": { "width": "1px", "style": "solid", "color": "oklch(0.878 0 0)" },
       "radius": { "sm": "6px", "md": "8px", "lg": "12px", "full": "9999px" }
     },
-    "shadows": ["0 1px 2px 0 rgba(0,0,0,0.05)", "0 4px 6px -1px rgba(0,0,0,0.1)"]
+    "shadows": ["0 1px 2px 0 rgba(0,0,0,0.05)", "0 4px 6px -1px rgba(0,0,0,0.1)"],
+    "cssVariables": {
+      "light": {
+        "--background": "oklch(1 0 0)",
+        "--foreground": "oklch(0.145 0 0)",
+        "--sidebar": "oklch(0.985 0 0)",
+        "--primary": "oklch(0.205 0 0)",
+        "--border": "oklch(0.922 0 0)",
+        "--ring": "oklch(0.708 0 0)"
+      },
+      "dark": {
+        "--background": "oklch(0.145 0 0)",
+        "--foreground": "oklch(0.985 0 0)",
+        "--sidebar": "oklch(0.205 0 0)",
+        "--primary": "oklch(0.922 0 0)",
+        "--border": "oklch(0.269 0 0)",
+        "--ring": "oklch(0.439 0 0)"
+      }
+    }
   }
 }
 ```
@@ -203,8 +227,9 @@ function autoCalcCorrectionFactor(fontSizes) {
 
         const tag = el.tagName.toLowerCase();
         if (['h1','h2','h3','h4','h5','p','span','a','label'].includes(tag)) {
-          const key = `${s.fontSize}|${s.fontWeight}|${s.lineHeight}`;
-          result.typo.push({ tag, key, fontSize: s.fontSize, fontWeight: s.fontWeight, lineHeight: s.lineHeight });
+          const family = s.fontFamily.split(',')[0].trim().replace(/['"]/g, '');
+          const key = `${family}|${s.fontSize}|${s.fontWeight}|${s.fontStyle}|${s.lineHeight}|${s.letterSpacing}`;
+          result.typo.push({ tag, key, fontFamily: family, fontSize: s.fontSize, fontWeight: s.fontWeight, fontStyle: s.fontStyle, lineHeight: s.lineHeight, letterSpacing: s.letterSpacing });
         }
       }
       return result;
@@ -221,6 +246,32 @@ function autoCalcCorrectionFactor(fontSizes) {
       typoMap.set(t.key, existing);
     });
   }
+
+  // CSS 변수 추출
+  const cssVariables = await page.evaluate(() => {
+    const vars = { light: {}, dark: {} };
+    // :root (light) 변수
+    const rootStyles = getComputedStyle(document.documentElement);
+    for (const prop of [...document.styleSheets].flatMap(s => {
+      try { return [...s.cssRules]; } catch { return []; }
+    }).filter(r => r.selectorText === ':root' || r.selectorText === '.light')
+      .flatMap(r => [...r.style])) {
+      if (prop.startsWith('--')) {
+        vars.light[prop] = rootStyles.getPropertyValue(prop).trim();
+      }
+    }
+    // .dark 변수
+    for (const rule of [...document.styleSheets].flatMap(s => {
+      try { return [...s.cssRules]; } catch { return []; }
+    }).filter(r => r.selectorText === '.dark')) {
+      for (const prop of [...rule.style]) {
+        if (prop.startsWith('--')) {
+          vars.dark[prop] = rule.style.getPropertyValue(prop).trim();
+        }
+      }
+    }
+    return vars;
+  });
 
   const { factor, confidence } = autoCalcCorrectionFactor([...new Set(allFontSizes)]);
 
@@ -242,9 +293,12 @@ function autoCalcCorrectionFactor(fontSizes) {
           .sort((a, b) => b.count - a.count)
           .slice(0, 15)
           .map(t => [t.tag, {
+            fontFamily: t.fontFamily,
             fontSize: `${Math.round(parseFloat(t.fontSize) * factor)}px`,
             fontWeight: t.fontWeight,
+            fontStyle: t.fontStyle !== 'normal' ? t.fontStyle : undefined,
             lineHeight: `${Math.round(parseFloat(t.lineHeight) * factor)}px`,
+            letterSpacing: t.letterSpacing,
             rawFontSize: t.fontSize,
             count: t.count,
           }])
@@ -264,6 +318,7 @@ function autoCalcCorrectionFactor(fontSizes) {
           .sort((a, b) => parseFloat(a) - parseFloat(b)),
       },
       shadows: [...shadowSet].slice(0, 5),
+      cssVariables,
     },
   };
 
@@ -286,7 +341,7 @@ function autoCalcCorrectionFactor(fontSizes) {
 ### 2.1 원패스 전체 추출 전략
 
 한 번의 Playwright 실행으로 모든 페이지를 순회하며 **모든 가시 요소**를 추출한다.
-기존 6 카테고리 × 12 속성 포맷을 유지하되, 영역(sidebar/header/content)과 컴포넌트 타입을 자동 분류한다.
+7 카테고리 × 15 속성 포맷으로 영역(sidebar/header/content)과 컴포넌트 타입을 자동 분류한다.
 
 ### 2.2 영역 자동 분류
 
@@ -304,6 +359,7 @@ y < headerBottom && x ≥ sidebarRight → header
 
 | 신호 | 타입 |
 |------|------|
+| `svg`, `img[src*=".svg"]` | icon |
 | `table`, `thead`, `th`, `td` | table |
 | `input`, `select`, `textarea` | form |
 | `button` | button |
@@ -359,6 +415,7 @@ const extractAll = (CORRECTION) => {
   }
 
   function classifyType(tag, el, cs) {
+    if (tag === 'svg' || (tag === 'img' && (el.src || '').includes('.svg'))) return 'icon';
     if (['table','thead','tbody','tr','th','td'].includes(tag)) return 'table';
     if (['input','select','textarea'].includes(tag)) return 'form';
     if (tag === 'button') return 'button';
@@ -402,7 +459,7 @@ const extractAll = (CORRECTION) => {
     return roles[tag] || '';
   }
 
-  const selectors = 'h1,h2,h3,h4,h5,p,span,a,label,li,table,thead,tbody,tr,th,td,input,select,button,textarea,nav,aside,header,main,section';
+  const selectors = 'h1,h2,h3,h4,h5,p,span,a,label,li,table,thead,tbody,tr,th,td,input,select,button,textarea,nav,aside,header,main,section,svg';
   const cardSelector = 'div[class*="border"],div[class*="bg-"],div[class*="rounded"]';
   const allEls = [...document.querySelectorAll(selectors), ...document.querySelectorAll(cardSelector)];
 
@@ -442,8 +499,10 @@ const extractAll = (CORRECTION) => {
       color: s.color,
       bgColor: s.backgroundColor,
       opacity: s.opacity !== '1' ? s.opacity : '',
+      fontFamily: s.fontFamily.split(',')[0].trim().replace(/['"]/g, ''),
       fontSize: `${(parseFloat(s.fontSize) * CORRECTION).toFixed(0)}px`,
       fontWeight: s.fontWeight,
+      fontStyle: s.fontStyle !== 'normal' ? s.fontStyle : '',
       lineHeight: `${(parseFloat(s.lineHeight) * CORRECTION).toFixed(0)}px`,
       letterSpacing: s.letterSpacing,
       textAlign: s.textAlign !== 'start' ? s.textAlign : '',
@@ -458,11 +517,63 @@ const extractAll = (CORRECTION) => {
       display: s.display,
       alignItems: s.alignItems !== 'normal' ? s.alignItems : '',
       justifyContent: s.justifyContent !== 'normal' ? s.justifyContent : '',
+      flexDirection: s.flexDirection !== 'row' ? s.flexDirection : '',
+      flexWrap: s.flexWrap !== 'nowrap' ? s.flexWrap : '',
+      flexGrow: s.flexGrow !== '0' ? s.flexGrow : '',
+      flexShrink: s.flexShrink !== '1' ? s.flexShrink : '',
+      flexBasis: s.flexBasis !== 'auto' ? s.flexBasis : '',
+      gridTemplateColumns: s.gridTemplateColumns !== 'none' ? s.gridTemplateColumns : '',
+      gridTemplateRows: s.gridTemplateRows !== 'none' ? s.gridTemplateRows : '',
+      gridColumn: s.gridColumn !== 'auto' ? s.gridColumn : '',
+      gridRow: s.gridRow !== 'auto' ? s.gridRow : '',
+      placeItems: s.placeItems !== 'normal' ? s.placeItems : '',
+      order: s.order !== '0' ? s.order : '',
       gap: s.gap !== 'normal' ? s.gap : '',
       position: s.position !== 'static' ? s.position : '',
       cursor: s.cursor !== 'auto' ? s.cursor : '',
+      textDecoration: s.textDecorationLine !== 'none' ? s.textDecorationLine : '',
+      textOverflow: s.textOverflow !== 'clip' ? s.textOverflow : '',
+      wordBreak: s.wordBreak !== 'normal' ? s.wordBreak : '',
+      overflowWrap: s.overflowWrap !== 'normal' ? s.overflowWrap : '',
+      overflow: s.overflow !== 'visible' ? s.overflow : '',
+      zIndex: s.zIndex !== 'auto' ? s.zIndex : '',
+      borderColor: s.borderColor,
+      borderWidth: s.borderWidth !== '0px' ? s.borderWidth : '',
       transition: s.transitionProperty !== 'all' && s.transitionProperty !== 'none'
-        ? `${s.transitionProperty} ${s.transitionDuration}` : '',
+        ? `${s.transitionProperty} ${s.transitionDuration} ${s.transitionTimingFunction}` : '',
+      // 아이콘 속성
+      ...(tag === 'svg' ? {
+        svgWidth: el.getAttribute('width') || s.width,
+        svgHeight: el.getAttribute('height') || s.height,
+        stroke: el.getAttribute('stroke') || s.stroke || '',
+        strokeWidth: el.getAttribute('stroke-width') || '',
+        fill: el.getAttribute('fill') || '',
+      } : {}),
+      // placeholder 스타일 (input/textarea)
+      ...(['input','textarea'].includes(tag) ? (() => {
+        const ph = el.getAttribute('placeholder');
+        if (!ph) return {};
+        // placeholder 색상은 ::placeholder 의사 요소에서 가져옴
+        return { placeholder: ph, placeholderColor: '' }; // computed에서 직접 접근 불가, 별도 처리
+      })() : {}),
+      // ::before/::after 의사 요소
+      ...(() => {
+        const pseudo = {};
+        for (const p of ['::before', '::after']) {
+          const ps = getComputedStyle(el, p === '::before' ? ':before' : ':after');
+          if (ps.content && ps.content !== 'none' && ps.content !== '""' && ps.content !== "''") {
+            pseudo[p] = {
+              content: ps.content,
+              width: ps.width, height: ps.height,
+              bgColor: ps.backgroundColor,
+              color: ps.color,
+              position: ps.position !== 'static' ? ps.position : '',
+              borderRadius: ps.borderRadius !== '0px' ? ps.borderRadius : '',
+            };
+          }
+        }
+        return Object.keys(pseudo).length > 0 ? { pseudoElements: pseudo } : {};
+      })(),
       contrast: cr,
       contrastPass: cr ? parseFloat(cr) >= 4.5 : null,
       name: accessibleName(el),
@@ -531,7 +642,95 @@ CSS 애니메이션을 비활성화하여 결정론적 스크린샷을 확보한
 - `includeAA: false` — 안티앨리어싱 픽셀 자동 무시
 - 이미지 크기 불일치 시 작은 쪽에 맞춰 crop
 
-### 3.3 싱크율 계산
+### 3.3 컴포넌트 단위 정밀 비교
+
+전체 페이지 비교로는 개별 컴포넌트의 미세 차이가 묻힌다. 영역별로 분리 비교한다.
+
+**영역 분리 캡처:**
+1. 사이드바/메뉴바 영역만 크롭 → 비교
+2. 헤더 영역만 크롭 → 비교
+3. 콘텐츠 영역 내 주요 컴포넌트(카드, 테이블, 폼)별 bounding box 크롭 → 개별 비교
+4. 각 영역/컴포넌트별 싱크율 산출 → 전체 90%여도 특정 영역 70%인 문제 감지
+
+**정밀 threshold 2차 비교:**
+- 1차: `threshold: 0.15` (기본 — 안티앨리어싱 등 허용)
+- 2차: `threshold: 0.05` (정밀 — 미세 간격/정렬/색상 차이 검출)
+- 2차 비교 결과는 "정밀 diff"로 별도 보고
+
+### 3.4 인터랙션 상태 캡처
+
+정적 스크린샷으로는 hover/active/focus 상태를 확인할 수 없다. Playwright로 인터랙션 상태를 캡처한다.
+
+**캡처 대상:**
+| 상태 | 대상 요소 | 캡처 방법 |
+|------|----------|----------|
+| **hover** | 메뉴 아이템, 버튼, 테이블 행, 카드, 링크 | `element.hover()` → 스크린샷 |
+| **active** | 현재 선택된 메뉴, 활성 탭 | 네비게이션 클릭 후 스크린샷 |
+| **focus** | 입력 필드, 셀렉트 | `element.focus()` → 스크린샷 |
+
+**추출 속성:**
+- hover 시: `backgroundColor`, `color`, `borderColor`, `boxShadow`, `transform`, `opacity` 변화
+- active 시: 인디케이터 스타일 (좌측 바, 배경색, 폰트 굵기)
+- focus 시: `outline`, `ring`, `borderColor` 변화
+
+**비교 방법:**
+1. 레퍼런스 사이트에서 hover 상태 캡처 + computed style 추출
+2. 로컬 사이트에서 동일 요소 hover 상태 캡처 + computed style 추출
+3. computed style 값 직접 비교 (px 단위 diff)
+
+### 3.5 정렬/배열 검증
+
+같은 레벨 요소들의 정렬 일관성을 검증한다.
+
+- 형제 요소 간 x/y 좌표 추출 → 수평/수직 정렬 일치 확인
+- 형제 요소 간 gap 균일성 검증 (표준편차 2px 이하)
+- 그리드 컬럼 너비 균일성 확인
+
+### 3.6 텍스트 콘텐츠 마스킹
+
+더미 데이터와 실제 데이터의 텍스트 차이가 pixelmatch에서 불필요한 diff를 발생시킨다. 텍스트 영역을 마스킹하여 순수 레이아웃/스타일 차이만 비교한다.
+
+**마스킹 방법:**
+1. 양쪽 사이트에서 `page.addInitScript()`로 모든 텍스트 요소의 `color`를 `transparent`로 설정
+2. 텍스트가 보이지 않는 상태에서 스크린샷 캡처 → 레이아웃/배경/보더만 비교
+3. 마스킹 전후 싱크율을 모두 보고하여 "텍스트 제외 싱크율" 산출
+
+**마스킹 대상:** `h1~h6`, `p`, `span`, `a`, `label`, `li`, `td`, `th`, `button` 내 텍스트
+
+### 3.7 스크롤 영역 비교
+
+`fullPage: false`로는 뷰포트 밖 콘텐츠를 놓친다.
+
+**비교 방법:**
+1. `fullPage: true`로 전체 페이지 캡처 → 스크롤 영역 포함
+2. 뷰포트 단위로 분할 비교 (상단/중간/하단)
+3. 스크롤 가능한 컨테이너(`overflow: auto/scroll`) 내부를 별도 스크롤 후 캡처
+
+### 3.8 반응형 멀티 뷰포트 비교
+
+단일 뷰포트(1366×900)만으로는 반응형 레이아웃 차이를 놓친다.
+
+**비교 뷰포트:**
+| 뷰포트 | 크기 | 용도 |
+|--------|------|------|
+| 모바일 | 375 × 812 | 모바일 레이아웃, 햄버거 메뉴 |
+| 태블릿 | 768 × 1024 | 태블릿 레이아웃, 그리드 변환 |
+| 데스크톱 | 1366 × 900 | 기본 (기존) |
+| 와이드 | 1920 × 1080 | 와이드 스크린 레이아웃 |
+
+각 뷰포트별 싱크율을 개별 보고한다.
+
+### 3.9 다크 모드 비교
+
+다크 모드가 있는 사이트는 라이트/다크 양쪽 비교가 필요하다.
+
+**비교 방법:**
+1. 라이트 모드 캡처 (기본)
+2. `page.emulateMedia({ colorScheme: 'dark' })` 또는 `document.documentElement.classList.add('dark')` 후 다크 모드 캡처
+3. 양쪽 모드에서 각각 싱크율 산출
+4. CSS 변수 값이 다크 모드에서 올바르게 전환되는지 검증
+
+### 3.10 싱크율 계산
 
 ```
 싱크율 = (1 - 불일치픽셀수 / 전체픽셀수) × 100
@@ -539,7 +738,7 @@ CSS 애니메이션을 비활성화하여 결정론적 스크린샷을 확보한
 
 페이지별 싱크율 + 전체 평균 싱크율을 출력한다.
 
-### 3.4 스크립트 템플릿 C: visual-regression.js
+### 3.11 스크립트 템플릿 C: visual-regression.js
 
 ```javascript
 import { chromium } from 'playwright';
@@ -650,6 +849,251 @@ function cropToMatch(pngA, pngB) {
   console.log(`  OVERALL SYNC RATE: ${overallSync}%`);
   console.log('-'.repeat(60));
   console.log(`\nDiff images saved: ${Object.keys(refShots).map(n => `diff-${n}.png`).join(', ')}`);
+
+  // === 정밀 비교 (threshold 0.05) ===
+  console.log('\n' + '='.repeat(60));
+  console.log('  PRECISION COMPARISON (threshold: 0.05)');
+  console.log('='.repeat(60));
+
+  for (const [name, refBuf] of Object.entries(refShots)) {
+    const localBuf = localShots[name];
+    if (!localBuf) continue;
+
+    const refPng = PNG.sync.read(refBuf);
+    const localPng = PNG.sync.read(localBuf);
+    const { width, height, dataA, dataB } = cropToMatch(refPng, localPng);
+
+    const diff = new PNG({ width, height });
+    const numDiff = pixelmatch(dataA, dataB, diff.data, width, height, {
+      threshold: 0.05,
+      includeAA: false,
+    });
+
+    const total = width * height;
+    const syncRate = ((1 - numDiff / total) * 100).toFixed(1);
+    fs.writeFileSync(`diff-precision-${name}.png`, PNG.sync.write(diff));
+    console.log(`  [${name}] Precision Sync: ${syncRate}%`);
+  }
+
+  // === 컴포넌트 단위 비교 ===
+  // 사이드바, 헤더, 콘텐츠 영역을 개별 크롭하여 비교
+  console.log('\n' + '='.repeat(60));
+  console.log('  COMPONENT-LEVEL COMPARISON');
+  console.log('='.repeat(60));
+
+  async function captureRegion(url, selector, name) {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: VIEWPORT });
+    await page.addInitScript(() => {
+      const style = document.createElement('style');
+      style.textContent = '*, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }';
+      document.head.appendChild(style);
+    });
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForTimeout(2000);
+    try {
+      const el = page.locator(selector).first();
+      const shot = await el.screenshot();
+      await browser.close();
+      return shot;
+    } catch {
+      await browser.close();
+      return null;
+    }
+  }
+
+  const REGIONS = [
+    { name: 'sidebar', selector: 'aside, nav[class*="sidebar"], div[class*="sidebar"]' },
+    { name: 'header', selector: 'header, div[class*="header"]' },
+    { name: 'main-content', selector: 'main, div[class*="content"]' },
+  ];
+
+  for (const region of REGIONS) {
+    const refRegion = await captureRegion(REF_URL, region.selector, region.name);
+    const localRegion = await captureRegion(LOCAL_URL, region.selector, region.name);
+    if (!refRegion || !localRegion) {
+      console.log(`  [${region.name}] SKIP — element not found`);
+      continue;
+    }
+    const refPng = PNG.sync.read(refRegion);
+    const localPng = PNG.sync.read(localRegion);
+    const { width, height, dataA, dataB } = cropToMatch(refPng, localPng);
+    const diff = new PNG({ width, height });
+    const numDiff = pixelmatch(dataA, dataB, diff.data, width, height, { threshold: 0.15, includeAA: false });
+    const syncRate = ((1 - numDiff / (width * height)) * 100).toFixed(1);
+    fs.writeFileSync(`diff-region-${region.name}.png`, PNG.sync.write(diff));
+    console.log(`  [${region.name}] Sync: ${syncRate}%`);
+  }
+
+  // === Hover 상태 비교 ===
+  console.log('\n' + '='.repeat(60));
+  console.log('  HOVER STATE COMPARISON');
+  console.log('='.repeat(60));
+
+  async function captureHoverStyles(url, selectors) {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: VIEWPORT });
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForTimeout(2000);
+    const results = [];
+    for (const sel of selectors) {
+      try {
+        const el = page.locator(sel).first();
+        // 기본 상태 스타일
+        const beforeStyle = await el.evaluate(e => {
+          const s = getComputedStyle(e);
+          return { bg: s.backgroundColor, color: s.color, border: s.borderColor, shadow: s.boxShadow, opacity: s.opacity };
+        });
+        // hover 상태
+        await el.hover();
+        await page.waitForTimeout(300);
+        const afterStyle = await el.evaluate(e => {
+          const s = getComputedStyle(e);
+          return { bg: s.backgroundColor, color: s.color, border: s.borderColor, shadow: s.boxShadow, opacity: s.opacity };
+        });
+        const changed = Object.keys(beforeStyle).filter(k => beforeStyle[k] !== afterStyle[k]);
+        if (changed.length > 0) {
+          results.push({ selector: sel, before: beforeStyle, after: afterStyle, changed });
+        }
+      } catch { /* skip */ }
+    }
+    await browser.close();
+    return results;
+  }
+
+  const HOVER_TARGETS = [
+    'nav a', 'nav button', 'aside a', 'aside button',
+    'button', 'a[href]', 'tr', '[class*="card"]',
+  ];
+
+  const refHover = await captureHoverStyles(REF_URL, HOVER_TARGETS);
+  const localHover = await captureHoverStyles(LOCAL_URL, HOVER_TARGETS);
+
+  for (const rh of refHover) {
+    const lh = localHover.find(l => l.selector === rh.selector);
+    if (!lh) {
+      console.log(`  [${rh.selector}] MISSING hover in local`);
+      continue;
+    }
+    const mismatches = rh.changed.filter(k => rh.after[k] !== lh.after?.[k]);
+    if (mismatches.length > 0) {
+      console.log(`  [${rh.selector}] Hover diff: ${mismatches.map(k => `${k}: ${rh.after[k]} vs ${lh.after?.[k]}`).join(', ')}`);
+    } else {
+      console.log(`  [${rh.selector}] Hover OK`);
+    }
+  }
+
+  // === 텍스트 마스킹 비교 ===
+  console.log('\n' + '='.repeat(60));
+  console.log('  TEXT-MASKED COMPARISON (layout/style only)');
+  console.log('='.repeat(60));
+
+  async function captureMasked(url) {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: VIEWPORT });
+    await page.addInitScript(() => {
+      const style = document.createElement('style');
+      style.textContent = `
+        *, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }
+        h1,h2,h3,h4,h5,h6,p,span,a,label,li,td,th,button { color: transparent !important; }
+      `;
+      document.head.appendChild(style);
+    });
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForTimeout(2000);
+    const shot = await page.screenshot({ fullPage: false });
+    await browser.close();
+    return shot;
+  }
+
+  const refMasked = await captureMasked(REF_URL);
+  const localMasked = await captureMasked(LOCAL_URL);
+  if (refMasked && localMasked) {
+    const rp = PNG.sync.read(refMasked), lp = PNG.sync.read(localMasked);
+    const { width, height, dataA, dataB } = cropToMatch(rp, lp);
+    const diff = new PNG({ width, height });
+    const nd = pixelmatch(dataA, dataB, diff.data, width, height, { threshold: 0.15, includeAA: false });
+    const sr = ((1 - nd / (width * height)) * 100).toFixed(1);
+    fs.writeFileSync('diff-masked.png', PNG.sync.write(diff));
+    console.log(`  Text-masked Sync: ${sr}%`);
+  }
+
+  // === 멀티 뷰포트 비교 ===
+  console.log('\n' + '='.repeat(60));
+  console.log('  MULTI-VIEWPORT COMPARISON');
+  console.log('='.repeat(60));
+
+  const VIEWPORTS = [
+    { name: 'mobile', width: 375, height: 812 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'wide', width: 1920, height: 1080 },
+  ];
+
+  for (const vp of VIEWPORTS) {
+    async function captureVP(url) {
+      const browser = await chromium.launch({ headless: true });
+      const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height } });
+      await page.addInitScript(() => {
+        const style = document.createElement('style');
+        style.textContent = '*, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }';
+        document.head.appendChild(style);
+      });
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      await page.waitForTimeout(2000);
+      const shot = await page.screenshot({ fullPage: false });
+      await browser.close();
+      return shot;
+    }
+    const refVP = await captureVP(REF_URL);
+    const localVP = await captureVP(LOCAL_URL);
+    if (refVP && localVP) {
+      const rp = PNG.sync.read(refVP), lp = PNG.sync.read(localVP);
+      const { width, height, dataA, dataB } = cropToMatch(rp, lp);
+      const diff = new PNG({ width, height });
+      const nd = pixelmatch(dataA, dataB, diff.data, width, height, { threshold: 0.15, includeAA: false });
+      const sr = ((1 - nd / (width * height)) * 100).toFixed(1);
+      fs.writeFileSync(`diff-${vp.name}.png`, PNG.sync.write(diff));
+      console.log(`  [${vp.name} ${vp.width}×${vp.height}] Sync: ${sr}%`);
+    }
+  }
+
+  // === 다크 모드 비교 ===
+  console.log('\n' + '='.repeat(60));
+  console.log('  DARK MODE COMPARISON');
+  console.log('='.repeat(60));
+
+  async function captureDark(url) {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: VIEWPORT, colorScheme: 'dark' });
+    await page.addInitScript(() => {
+      const style = document.createElement('style');
+      style.textContent = '*, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }';
+      document.head.appendChild(style);
+      // class 기반 다크 모드 토글
+      document.documentElement.classList.add('dark');
+    });
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForTimeout(2000);
+    const shot = await page.screenshot({ fullPage: false });
+    await browser.close();
+    return shot;
+  }
+
+  try {
+    const refDark = await captureDark(REF_URL);
+    const localDark = await captureDark(LOCAL_URL);
+    if (refDark && localDark) {
+      const rp = PNG.sync.read(refDark), lp = PNG.sync.read(localDark);
+      const { width, height, dataA, dataB } = cropToMatch(rp, lp);
+      const diff = new PNG({ width, height });
+      const nd = pixelmatch(dataA, dataB, diff.data, width, height, { threshold: 0.15, includeAA: false });
+      const sr = ((1 - nd / (width * height)) * 100).toFixed(1);
+      fs.writeFileSync('diff-dark.png', PNG.sync.write(diff));
+      console.log(`  Dark mode Sync: ${sr}%`);
+    }
+  } catch (e) {
+    console.log(`  Dark mode: SKIP (${e.message})`);
+  }
 })().catch(console.error);
 ```
 
@@ -684,11 +1128,117 @@ const TAILWIND_MAP = {
   fontWeight: {
     '100': 'font-thin', '300': 'font-light', '400': 'font-normal',
     '500': 'font-medium', '600': 'font-semibold', '700': 'font-bold',
+    '800': 'font-extrabold',
+  },
+  lineHeight: {
+    '16px': 'leading-4', '20px': 'leading-5', '24px': 'leading-6',
+    '28px': 'leading-7', '32px': 'leading-8', '36px': 'leading-9',
+    '40px': 'leading-10', '1': 'leading-none', '1.25': 'leading-tight',
+    '1.375': 'leading-snug', '1.5': 'leading-normal', '1.625': 'leading-relaxed',
+    '2': 'leading-loose',
+  },
+  letterSpacing: {
+    '-0.05em': 'tracking-tighter', '-0.025em': 'tracking-tight',
+    '0em': 'tracking-normal', 'normal': 'tracking-normal',
+    '0.025em': 'tracking-wide', '0.05em': 'tracking-wider',
+    '0.1em': 'tracking-widest',
+  },
+  fontStyle: {
+    'italic': 'italic', 'normal': 'not-italic',
+  },
+  textAlign: {
+    'left': 'text-left', 'center': 'text-center', 'right': 'text-right',
+    'justify': 'text-justify', 'start': 'text-start', 'end': 'text-end',
+  },
+  textTransform: {
+    'uppercase': 'uppercase', 'lowercase': 'lowercase',
+    'capitalize': 'capitalize', 'none': 'normal-case',
+  },
+  whiteSpace: {
+    'nowrap': 'whitespace-nowrap', 'pre': 'whitespace-pre',
+    'pre-line': 'whitespace-pre-line', 'pre-wrap': 'whitespace-pre-wrap',
+    'break-spaces': 'whitespace-break-spaces', 'normal': 'whitespace-normal',
+  },
+  wordBreak: {
+    'break-all': 'break-all', 'keep-all': 'break-keep',
+  },
+  overflowWrap: {
+    'break-word': 'break-words',
+  },
+  textDecoration: {
+    'underline': 'underline', 'overline': 'overline',
+    'line-through': 'line-through', 'none': 'no-underline',
+  },
+  textOverflow: {
+    'ellipsis': 'truncate',
+  },
+  overflow: {
+    'hidden': 'overflow-hidden', 'auto': 'overflow-auto',
+    'scroll': 'overflow-scroll', 'visible': 'overflow-visible',
+  },
+  display: {
+    'flex': 'flex', 'inline-flex': 'inline-flex',
+    'grid': 'grid', 'inline-grid': 'inline-grid',
+    'block': 'block', 'inline-block': 'inline-block',
+    'inline': 'inline', 'none': 'hidden',
+  },
+  flexDirection: {
+    'row': 'flex-row', 'row-reverse': 'flex-row-reverse',
+    'column': 'flex-col', 'column-reverse': 'flex-col-reverse',
+  },
+  flexWrap: {
+    'wrap': 'flex-wrap', 'wrap-reverse': 'flex-wrap-reverse',
+    'nowrap': 'flex-nowrap',
+  },
+  alignItems: {
+    'flex-start': 'items-start', 'flex-end': 'items-end',
+    'center': 'items-center', 'baseline': 'items-baseline',
+    'stretch': 'items-stretch',
+  },
+  justifyContent: {
+    'flex-start': 'justify-start', 'flex-end': 'justify-end',
+    'center': 'justify-center', 'space-between': 'justify-between',
+    'space-around': 'justify-around', 'space-evenly': 'justify-evenly',
+  },
+  gridTemplateCols: (value) => {
+    const repeatMatch = value.match(/repeat\((\d+),/);
+    if (repeatMatch) return `grid-cols-${repeatMatch[1]}`;
+    const colCount = value.split(/\s+/).length;
+    return `grid-cols-${colCount}`;
+  },
+  gridTemplateRows: (value) => {
+    const repeatMatch = value.match(/repeat\((\d+),/);
+    if (repeatMatch) return `grid-rows-${repeatMatch[1]}`;
+    const rowCount = value.split(/\s+/).length;
+    return `grid-rows-${rowCount}`;
+  },
+  flexGrow: { '0': 'grow-0', '1': 'grow' },
+  flexShrink: { '0': 'shrink-0', '1': 'shrink' },
+  placeItems: {
+    'center': 'place-items-center', 'start': 'place-items-start',
+    'end': 'place-items-end', 'stretch': 'place-items-stretch',
+  },
+  order: {
+    '-1': 'order-first', '0': 'order-none', '1': 'order-1',
+    '2': 'order-2', '3': 'order-3', '9999': 'order-last',
   },
   borderRadius: {
     '0px': 'rounded-none', '4px': 'rounded-sm', '6px': 'rounded-md',
     '8px': 'rounded-lg', '12px': 'rounded-xl', '16px': 'rounded-2xl',
     '9999px': 'rounded-full',
+  },
+  borderWidth: {
+    '0px': 'border-0', '1px': 'border', '2px': 'border-2',
+    '4px': 'border-4', '8px': 'border-8',
+  },
+  iconSize: {
+    '12px': 'w-3 h-3', '16px': 'w-4 h-4', '20px': 'w-5 h-5',
+    '24px': 'w-6 h-6', '32px': 'w-8 h-8', '40px': 'w-10 h-10',
+    '48px': 'w-12 h-12',
+  },
+  zIndex: {
+    '0': 'z-0', '10': 'z-10', '20': 'z-20', '30': 'z-30',
+    '40': 'z-40', '50': 'z-50',
   },
   spacing: (px) => {
     const rem = parseFloat(px) / 4;
@@ -736,12 +1286,7 @@ const AREA_FILE_MAP = {
   },
 };
 
-const TAILWIND_MAP = {
-  fontSize: { '12px':'text-xs', '14px':'text-sm', '16px':'text-base', '18px':'text-lg',
-    '20px':'text-xl', '24px':'text-2xl', '30px':'text-3xl' },
-  fontWeight: { '400':'font-normal', '500':'font-medium', '600':'font-semibold', '700':'font-bold' },
-  borderRadius: { '4px':'rounded-sm', '6px':'rounded-md', '8px':'rounded-lg', '12px':'rounded-xl', '9999px':'rounded-full' },
-};
+// TAILWIND_MAP은 4.2절의 전체 맵을 그대로 사용 (여기서는 생략, 위 4.2 참조)
 
 function extractClassesFromFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
@@ -826,6 +1371,539 @@ function suggestChange(refValue, property) {
                   });
                 }
               }
+
+              // lineHeight 비교
+              const refLH = refEl.lineHeight;
+              const twLH = TAILWIND_MAP.lineHeight[refLH];
+              if (twLH && !fc.classes.includes(twLH)) {
+                const currentTW = Object.values(TAILWIND_MAP.lineHeight).find(v => fc.classes.includes(v));
+                if (currentTW && currentTW !== twLH) {
+                  diffs.push({
+                    line: fc.line,
+                    property: 'lineHeight',
+                    reference: `${refLH} (${twLH})`,
+                    current: currentTW,
+                    suggestion: `${currentTW} → ${twLH}`,
+                  });
+                }
+              }
+
+              // letterSpacing 비교
+              const refLS = refEl.letterSpacing;
+              const twLS = TAILWIND_MAP.letterSpacing[refLS];
+              if (twLS && !fc.classes.includes(twLS)) {
+                const currentTW = Object.values(TAILWIND_MAP.letterSpacing).find(v => fc.classes.includes(v));
+                if (currentTW && currentTW !== twLS) {
+                  diffs.push({
+                    line: fc.line,
+                    property: 'letterSpacing',
+                    reference: `${refLS} (${twLS})`,
+                    current: currentTW,
+                    suggestion: `${currentTW} → ${twLS}`,
+                  });
+                }
+              }
+
+              // padding 비교
+              if (refEl.padding && refEl.padding !== '0px') {
+                const padValues = refEl.padding.split(' ').map(v => parseFloat(v));
+                for (const [idx, dir] of ['t','r','b','l'].entries()) {
+                  const pv = padValues[idx] || padValues[0];
+                  const pvRem = pv / 4;
+                  const spMap = { 0:'0',1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',8:'8',10:'10',12:'12',16:'16',20:'20',24:'24' };
+                  const twP = spMap[pvRem] ? `p${dir}-${spMap[pvRem]}` : null;
+                  // 축약형도 체크 (px-, py-, p-)
+                  if (twP && !fc.classes.includes(twP)) {
+                    const pxClass = `px-${spMap[pvRem]}`;
+                    const pyClass = `py-${spMap[pvRem]}`;
+                    const pClass = `p-${spMap[pvRem]}`;
+                    if (!fc.classes.includes(pxClass) && !fc.classes.includes(pyClass) && !fc.classes.includes(pClass)) {
+                      diffs.push({
+                        line: fc.line, property: `padding-${dir}`,
+                        reference: `${pv}px (${twP})`,
+                        current: '', suggestion: `→ ${twP}`,
+                      });
+                    }
+                  }
+                }
+              }
+
+              // margin 비교 (padding과 동일 패턴)
+              if (refEl.margin && refEl.margin !== '0px') {
+                const mValues = refEl.margin.split(' ').map(v => parseFloat(v));
+                for (const [idx, dir] of ['t','r','b','l'].entries()) {
+                  const mv = mValues[idx] || mValues[0];
+                  const mvRem = mv / 4;
+                  const spMap = { 0:'0',1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',8:'8',10:'10',12:'12',16:'16',20:'20',24:'24' };
+                  const twM = spMap[mvRem] ? `m${dir}-${spMap[mvRem]}` : null;
+                  if (twM && !fc.classes.includes(twM)) {
+                    const mxClass = `mx-${spMap[mvRem]}`;
+                    const myClass = `my-${spMap[mvRem]}`;
+                    const mClass = `m-${spMap[mvRem]}`;
+                    if (!fc.classes.includes(mxClass) && !fc.classes.includes(myClass) && !fc.classes.includes(mClass)) {
+                      diffs.push({
+                        line: fc.line, property: `margin-${dir}`,
+                        reference: `${mv}px (${twM})`,
+                        current: '', suggestion: `→ ${twM}`,
+                      });
+                    }
+                  }
+                }
+              }
+
+              // borderRadius 비교
+              if (refEl.borderRadius) {
+                const brMap = { '0px':'rounded-none','4px':'rounded-sm','6px':'rounded-md','8px':'rounded-lg','12px':'rounded-xl','16px':'rounded-2xl','9999px':'rounded-full' };
+                const twBR = brMap[refEl.borderRadius];
+                if (twBR && !fc.classes.includes(twBR)) {
+                  const currentBR = Object.values(brMap).find(v => fc.classes.includes(v));
+                  if (currentBR && currentBR !== twBR) {
+                    diffs.push({
+                      line: fc.line, property: 'borderRadius',
+                      reference: `${refEl.borderRadius} (${twBR})`,
+                      current: currentBR, suggestion: `${currentBR} → ${twBR}`,
+                    });
+                  }
+                }
+              }
+
+              // backgroundColor 비교 (gray 스케일)
+              if (refEl.bgColor && refEl.bgColor !== 'rgba(0, 0, 0, 0)') {
+                const bgMap = {
+                  'rgb(249, 250, 251)': 'bg-gray-50', 'rgb(243, 244, 246)': 'bg-gray-100',
+                  'rgb(229, 231, 235)': 'bg-gray-200', 'rgb(209, 213, 219)': 'bg-gray-300',
+                  'rgb(255, 255, 255)': 'bg-white',
+                };
+                const twBG = bgMap[refEl.bgColor];
+                if (twBG) {
+                  const currentBG = Object.values(bgMap).find(v => fc.classes.includes(v.replace('bg-', '')));
+                  if (currentBG && currentBG !== twBG) {
+                    diffs.push({
+                      line: fc.line, property: 'backgroundColor',
+                      reference: twBG, current: currentBG,
+                      suggestion: `${currentBG} → ${twBG}`,
+                    });
+                  }
+                }
+              }
+
+              // color (텍스트) 비교
+              if (refEl.color) {
+                const colorMap = {
+                  'rgb(17, 24, 39)': 'text-gray-900', 'rgb(31, 41, 55)': 'text-gray-800',
+                  'rgb(55, 65, 81)': 'text-gray-700', 'rgb(75, 85, 99)': 'text-gray-600',
+                  'rgb(107, 114, 128)': 'text-gray-500', 'rgb(156, 163, 175)': 'text-gray-400',
+                  'rgb(209, 213, 219)': 'text-gray-300',
+                };
+                const twColor = colorMap[refEl.color];
+                if (twColor) {
+                  const currentColor = Object.values(colorMap).find(v => fc.classes.includes(v.replace('text-', '')));
+                  if (currentColor && currentColor !== twColor) {
+                    diffs.push({
+                      line: fc.line, property: 'color',
+                      reference: twColor, current: currentColor,
+                      suggestion: `${currentColor} → ${twColor}`,
+                    });
+                  }
+                }
+              }
+
+              // boxShadow 비교
+              if (refEl.boxShadow) {
+                const shadowMap = {
+                  'none': 'shadow-none',
+                  '0 1px 2px 0 rgba(0,0,0,0.05)': 'shadow-sm',
+                  '0 1px 3px 0 rgba(0,0,0,0.1)': 'shadow',
+                  '0 4px 6px -1px rgba(0,0,0,0.1)': 'shadow-md',
+                  '0 10px 15px -3px rgba(0,0,0,0.1)': 'shadow-lg',
+                };
+                // 근사 매칭 (shadow 값은 정확히 안 맞을 수 있어서 패턴 매칭)
+                let twShadow = null;
+                if (refEl.boxShadow.includes('10px') || refEl.boxShadow.includes('15px')) twShadow = 'shadow-lg';
+                else if (refEl.boxShadow.includes('4px') || refEl.boxShadow.includes('6px')) twShadow = 'shadow-md';
+                else if (refEl.boxShadow.includes('1px 3px')) twShadow = 'shadow';
+                else if (refEl.boxShadow.includes('1px 2px')) twShadow = 'shadow-sm';
+                if (twShadow && !fc.classes.includes(twShadow)) {
+                  const currentShadow = ['shadow-none','shadow-sm','shadow','shadow-md','shadow-lg','shadow-xl','shadow-2xl'].find(v => fc.classes.includes(v));
+                  if (currentShadow && currentShadow !== twShadow) {
+                    diffs.push({
+                      line: fc.line, property: 'boxShadow',
+                      reference: `(${twShadow})`, current: currentShadow,
+                      suggestion: `${currentShadow} → ${twShadow}`,
+                    });
+                  }
+                }
+              }
+
+              // fontStyle 비교
+              if (refEl.fontStyle) {
+                const twFSt = { 'italic':'italic' }[refEl.fontStyle];
+                if (twFSt && !fc.classes.includes(twFSt)) {
+                  diffs.push({
+                    line: fc.line, property: 'fontStyle',
+                    reference: `${refEl.fontStyle} (${twFSt})`,
+                    current: 'normal', suggestion: `→ ${twFSt}`,
+                  });
+                }
+              }
+
+              // textAlign 비교
+              if (refEl.textAlign && refEl.textAlign !== 'start') {
+                const twTA = { 'left':'text-left', 'center':'text-center', 'right':'text-right', 'justify':'text-justify' }[refEl.textAlign];
+                if (twTA && !fc.classes.includes(twTA)) {
+                  const currentTA = ['text-left','text-center','text-right','text-justify'].find(v => fc.classes.includes(v));
+                  if (currentTA && currentTA !== twTA) {
+                    diffs.push({
+                      line: fc.line, property: 'textAlign',
+                      reference: `${refEl.textAlign} (${twTA})`,
+                      current: currentTA, suggestion: `${currentTA} → ${twTA}`,
+                    });
+                  }
+                }
+              }
+
+              // textTransform 비교
+              if (refEl.textTransform && refEl.textTransform !== 'none') {
+                const twTT = { 'uppercase':'uppercase', 'lowercase':'lowercase', 'capitalize':'capitalize' }[refEl.textTransform];
+                if (twTT && !fc.classes.includes(twTT)) {
+                  diffs.push({
+                    line: fc.line, property: 'textTransform',
+                    reference: `${refEl.textTransform} (${twTT})`,
+                    current: 'none', suggestion: `→ ${twTT}`,
+                  });
+                }
+              }
+
+              // whiteSpace 비교
+              if (refEl.whiteSpace) {
+                const twWS = { 'nowrap':'whitespace-nowrap', 'pre':'whitespace-pre', 'pre-line':'whitespace-pre-line', 'pre-wrap':'whitespace-pre-wrap' }[refEl.whiteSpace];
+                if (twWS && !fc.classes.includes(twWS)) {
+                  diffs.push({
+                    line: fc.line, property: 'whiteSpace',
+                    reference: `${refEl.whiteSpace} (${twWS})`,
+                    current: 'normal', suggestion: `→ ${twWS}`,
+                  });
+                }
+              }
+
+              // wordBreak 비교
+              if (refEl.wordBreak) {
+                const twWB = { 'break-all':'break-all', 'keep-all':'break-keep' }[refEl.wordBreak];
+                if (twWB && !fc.classes.includes(twWB)) {
+                  diffs.push({
+                    line: fc.line, property: 'wordBreak',
+                    reference: `${refEl.wordBreak} (${twWB})`,
+                    current: 'normal', suggestion: `→ ${twWB}`,
+                  });
+                }
+              }
+
+              // overflowWrap 비교
+              if (refEl.overflowWrap) {
+                const twOW = { 'break-word':'break-words' }[refEl.overflowWrap];
+                if (twOW && !fc.classes.includes(twOW)) {
+                  diffs.push({
+                    line: fc.line, property: 'overflowWrap',
+                    reference: `${refEl.overflowWrap} (${twOW})`,
+                    current: 'normal', suggestion: `→ ${twOW}`,
+                  });
+                }
+              }
+
+              // textDecoration 비교
+              if (refEl.textDecoration) {
+                const twTD = { 'underline':'underline', 'line-through':'line-through', 'overline':'overline' }[refEl.textDecoration];
+                if (twTD && !fc.classes.includes(twTD)) {
+                  diffs.push({
+                    line: fc.line, property: 'textDecoration',
+                    reference: `${refEl.textDecoration} (${twTD})`,
+                    current: 'none', suggestion: `→ ${twTD}`,
+                  });
+                }
+              }
+
+              // textOverflow/overflow 비교
+              if (refEl.textOverflow === 'ellipsis' && !fc.classes.includes('truncate')) {
+                diffs.push({
+                  line: fc.line, property: 'textOverflow',
+                  reference: 'ellipsis (truncate)', current: 'clip',
+                  suggestion: '→ truncate',
+                });
+              }
+              if (refEl.overflow && refEl.overflow !== 'visible') {
+                const twOF = { 'hidden':'overflow-hidden', 'auto':'overflow-auto', 'scroll':'overflow-scroll' }[refEl.overflow];
+                if (twOF && !fc.classes.includes(twOF)) {
+                  diffs.push({
+                    line: fc.line, property: 'overflow',
+                    reference: `${refEl.overflow} (${twOF})`,
+                    current: '', suggestion: `→ ${twOF}`,
+                  });
+                }
+              }
+
+              // borderColor 비교 (gray 스케일)
+              if (refEl.borderWidth && refEl.borderColor) {
+                const borderColorMap = {
+                  'rgb(229, 231, 235)': 'border-gray-200',
+                  'rgb(209, 213, 219)': 'border-gray-300',
+                  'rgb(156, 163, 175)': 'border-gray-400',
+                };
+                const twBC = borderColorMap[refEl.borderColor];
+                if (twBC && !fc.classes.includes(twBC.replace('border-', ''))) {
+                  const currentBC = Object.values(borderColorMap).find(v => fc.classes.includes(v.replace('border-', '')));
+                  if (currentBC && currentBC !== twBC) {
+                    diffs.push({
+                      line: fc.line, property: 'borderColor',
+                      reference: twBC, current: currentBC,
+                      suggestion: `${currentBC} → ${twBC}`,
+                    });
+                  }
+                }
+              }
+
+              // 아이콘 크기 비교
+              if (refEl.svgWidth) {
+                const iconSizeMap = { '12':'w-3 h-3', '16':'w-4 h-4', '20':'w-5 h-5', '24':'w-6 h-6', '32':'w-8 h-8' };
+                const refSize = parseInt(refEl.svgWidth);
+                const twIcon = iconSizeMap[String(refSize)];
+                if (twIcon) {
+                  const twW = twIcon.split(' ')[0]; // e.g., 'w-4'
+                  if (!fc.classes.includes(twW)) {
+                    const currentIcon = Object.values(iconSizeMap).map(v => v.split(' ')[0]).find(v => fc.classes.includes(v));
+                    if (currentIcon) {
+                      diffs.push({
+                        line: fc.line, property: 'iconSize',
+                        reference: `${refSize}px (${twIcon})`,
+                        current: currentIcon, suggestion: `${currentIcon} → ${twW}`,
+                      });
+                    }
+                  }
+                }
+              }
+
+              // fontFamily 비교
+              if (refEl.fontFamily) {
+                const refFF = refEl.fontFamily;
+                const fontClassPattern = /font-\[([^\]]+)\]|font-(sans|serif|mono)/;
+                const currentFontMatch = fc.classes.match(fontClassPattern);
+                const currentFont = currentFontMatch ? currentFontMatch[0] : null;
+                const expectedFont = refFF.toLowerCase().includes('mono') ? 'font-mono'
+                  : refFF.toLowerCase().includes('serif') ? 'font-serif' : 'font-sans';
+                if (currentFont && currentFont !== expectedFont) {
+                  diffs.push({
+                    line: fc.line,
+                    property: 'fontFamily',
+                    reference: `${refFF} (${expectedFont})`,
+                    current: currentFont,
+                    suggestion: `${currentFont} → ${expectedFont}`,
+                  });
+                }
+              }
+
+              // flexDirection 비교
+              if (refEl.flexDirection) {
+                const twFD = { 'column':'flex-col', 'column-reverse':'flex-col-reverse', 'row-reverse':'flex-row-reverse' }[refEl.flexDirection];
+                if (twFD && !fc.classes.includes(twFD)) {
+                  const currentFD = ['flex-col','flex-col-reverse','flex-row-reverse','flex-row'].find(v => fc.classes.includes(v));
+                  diffs.push({
+                    line: fc.line, property: 'flexDirection',
+                    reference: `${refEl.flexDirection} (${twFD})`,
+                    current: currentFD || 'flex-row',
+                    suggestion: `→ ${twFD}`,
+                  });
+                }
+              }
+
+              // flexWrap 비교
+              if (refEl.flexWrap) {
+                const twFW = { 'wrap':'flex-wrap', 'wrap-reverse':'flex-wrap-reverse' }[refEl.flexWrap];
+                if (twFW && !fc.classes.includes(twFW)) {
+                  diffs.push({
+                    line: fc.line, property: 'flexWrap',
+                    reference: `${refEl.flexWrap} (${twFW})`,
+                    current: 'flex-nowrap', suggestion: `→ ${twFW}`,
+                  });
+                }
+              }
+
+              // alignItems 비교
+              if (refEl.alignItems) {
+                const twAI = { 'flex-start':'items-start', 'flex-end':'items-end', 'center':'items-center', 'baseline':'items-baseline', 'stretch':'items-stretch' }[refEl.alignItems];
+                if (twAI && !fc.classes.includes(twAI)) {
+                  const currentAI = ['items-start','items-end','items-center','items-baseline','items-stretch'].find(v => fc.classes.includes(v));
+                  if (currentAI && currentAI !== twAI) {
+                    diffs.push({
+                      line: fc.line, property: 'alignItems',
+                      reference: `${refEl.alignItems} (${twAI})`,
+                      current: currentAI, suggestion: `${currentAI} → ${twAI}`,
+                    });
+                  }
+                }
+              }
+
+              // justifyContent 비교
+              if (refEl.justifyContent) {
+                const twJC = { 'flex-start':'justify-start', 'flex-end':'justify-end', 'center':'justify-center', 'space-between':'justify-between', 'space-around':'justify-around', 'space-evenly':'justify-evenly' }[refEl.justifyContent];
+                if (twJC && !fc.classes.includes(twJC)) {
+                  const currentJC = ['justify-start','justify-end','justify-center','justify-between','justify-around','justify-evenly'].find(v => fc.classes.includes(v));
+                  if (currentJC && currentJC !== twJC) {
+                    diffs.push({
+                      line: fc.line, property: 'justifyContent',
+                      reference: `${refEl.justifyContent} (${twJC})`,
+                      current: currentJC, suggestion: `${currentJC} → ${twJC}`,
+                    });
+                  }
+                }
+              }
+
+              // gridTemplateColumns 비교
+              if (refEl.gridTemplateColumns) {
+                const repeatMatch = refEl.gridTemplateColumns.match(/repeat\((\d+),/);
+                const colCount = repeatMatch ? repeatMatch[1] : refEl.gridTemplateColumns.split(/\s+/).length;
+                const twGC = `grid-cols-${colCount}`;
+                if (!fc.classes.includes(twGC)) {
+                  const currentGC = fc.classes.match(/grid-cols-(\d+)/)?.[0];
+                  if (currentGC) {
+                    diffs.push({
+                      line: fc.line, property: 'gridTemplateColumns',
+                      reference: `${refEl.gridTemplateColumns} (${twGC})`,
+                      current: currentGC, suggestion: `${currentGC} → ${twGC}`,
+                    });
+                  }
+                }
+              }
+
+              // gridTemplateRows 비교
+              if (refEl.gridTemplateRows) {
+                const repeatMatch = refEl.gridTemplateRows.match(/repeat\((\d+),/);
+                const rowCount = repeatMatch ? repeatMatch[1] : refEl.gridTemplateRows.split(/\s+/).length;
+                const twGR = `grid-rows-${rowCount}`;
+                if (!fc.classes.includes(twGR)) {
+                  const currentGR = fc.classes.match(/grid-rows-(\d+)/)?.[0];
+                  if (currentGR) {
+                    diffs.push({
+                      line: fc.line, property: 'gridTemplateRows',
+                      reference: `${refEl.gridTemplateRows} (${twGR})`,
+                      current: currentGR, suggestion: `${currentGR} → ${twGR}`,
+                    });
+                  }
+                }
+              }
+
+              // gridColumn span 비교
+              if (refEl.gridColumn) {
+                const spanMatch = refEl.gridColumn.match(/span\s+(\d+)/);
+                if (spanMatch) {
+                  const twSpan = `col-span-${spanMatch[1]}`;
+                  if (!fc.classes.includes(twSpan)) {
+                    const currentSpan = fc.classes.match(/col-span-(\d+|full)/)?.[0];
+                    if (currentSpan && currentSpan !== twSpan) {
+                      diffs.push({
+                        line: fc.line, property: 'gridColumn',
+                        reference: `${refEl.gridColumn} (${twSpan})`,
+                        current: currentSpan, suggestion: `${currentSpan} → ${twSpan}`,
+                      });
+                    }
+                  }
+                }
+              }
+
+              // gridRow span 비교
+              if (refEl.gridRow) {
+                const spanMatch = refEl.gridRow.match(/span\s+(\d+)/);
+                if (spanMatch) {
+                  const twSpan = `row-span-${spanMatch[1]}`;
+                  if (!fc.classes.includes(twSpan)) {
+                    const currentSpan = fc.classes.match(/row-span-(\d+|full)/)?.[0];
+                    if (currentSpan && currentSpan !== twSpan) {
+                      diffs.push({
+                        line: fc.line, property: 'gridRow',
+                        reference: `${refEl.gridRow} (${twSpan})`,
+                        current: currentSpan, suggestion: `${currentSpan} → ${twSpan}`,
+                      });
+                    }
+                  }
+                }
+              }
+
+              // flexGrow/Shrink/Basis 비교
+              if (refEl.flexGrow) {
+                const twFG = { '0':'grow-0', '1':'grow' }[refEl.flexGrow];
+                if (twFG && !fc.classes.includes(twFG)) {
+                  diffs.push({
+                    line: fc.line, property: 'flexGrow',
+                    reference: `${refEl.flexGrow} (${twFG})`,
+                    current: '', suggestion: `→ ${twFG}`,
+                  });
+                }
+              }
+              if (refEl.flexShrink) {
+                const twFS = { '0':'shrink-0', '1':'shrink' }[refEl.flexShrink];
+                if (twFS && !fc.classes.includes(twFS)) {
+                  diffs.push({
+                    line: fc.line, property: 'flexShrink',
+                    reference: `${refEl.flexShrink} (${twFS})`,
+                    current: '', suggestion: `→ ${twFS}`,
+                  });
+                }
+              }
+              if (refEl.flexBasis) {
+                const basisPx = parseFloat(refEl.flexBasis);
+                const basisMap = { 0:'basis-0', 64:'basis-16', 128:'basis-32', 256:'basis-64' };
+                const twBasis = basisMap[basisPx] || `basis-[${refEl.flexBasis}]`;
+                if (!fc.classes.includes(twBasis)) {
+                  const currentBasis = fc.classes.match(/basis-(\d+|\[[\w%]+\])/)?.[0];
+                  if (currentBasis && currentBasis !== twBasis) {
+                    diffs.push({
+                      line: fc.line, property: 'flexBasis',
+                      reference: `${refEl.flexBasis} (${twBasis})`,
+                      current: currentBasis, suggestion: `${currentBasis} → ${twBasis}`,
+                    });
+                  }
+                }
+              }
+
+              // placeItems 비교
+              if (refEl.placeItems) {
+                const twPI = { 'center':'place-items-center', 'start':'place-items-start', 'end':'place-items-end', 'stretch':'place-items-stretch' }[refEl.placeItems];
+                if (twPI && !fc.classes.includes(twPI)) {
+                  diffs.push({
+                    line: fc.line, property: 'placeItems',
+                    reference: `${refEl.placeItems} (${twPI})`,
+                    current: '', suggestion: `→ ${twPI}`,
+                  });
+                }
+              }
+
+              // order 비교
+              if (refEl.order) {
+                const twOrd = { '1':'order-1', '2':'order-2', '3':'order-3', '-1':'order-first', '9999':'order-last', '0':'order-none' }[refEl.order];
+                if (twOrd && !fc.classes.includes(twOrd)) {
+                  diffs.push({
+                    line: fc.line, property: 'order',
+                    reference: `${refEl.order} (${twOrd})`,
+                    current: '', suggestion: `→ ${twOrd}`,
+                  });
+                }
+              }
+
+              // gap 비교
+              if (refEl.gap) {
+                const gapPx = parseFloat(refEl.gap);
+                const gapRem = gapPx / 4;
+                const gapMap = { 0:'0', 1:'1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 8:'8', 10:'10', 12:'12' };
+                const twGap = gapMap[gapRem] ? `gap-${gapMap[gapRem]}` : `gap-[${gapPx}px]`;
+                if (!fc.classes.includes(twGap)) {
+                  const currentGap = fc.classes.match(/gap-(\d+|\[[\dpx]+\])/)?.[0];
+                  if (currentGap && currentGap !== twGap) {
+                    diffs.push({
+                      line: fc.line, property: 'gap',
+                      reference: `${refEl.gap} (${twGap})`,
+                      current: currentGap, suggestion: `${currentGap} → ${twGap}`,
+                    });
+                  }
+                }
+              }
             }
           }
 
@@ -854,6 +1932,34 @@ function suggestChange(refValue, property) {
       console.log(`│   제안: ${d.suggestion}`);
     }
     console.log('└' + '─'.repeat(60));
+  }
+
+  // CSS 변수 비교 (tokens.json이 있으면)
+  const tokensPath = 'tokens.json';
+  if (fs.existsSync(tokensPath)) {
+    const tokens = JSON.parse(fs.readFileSync(tokensPath, 'utf-8'));
+    const refVars = tokens.tokens?.cssVariables?.light || {};
+    // globals.css에서 로컬 CSS 변수 추출
+    const globalsPath = path.join('src/app', 'globals.css');
+    if (fs.existsSync(globalsPath)) {
+      const globalsContent = fs.readFileSync(globalsPath, 'utf-8');
+      const localVars = {};
+      const varRegex = /--([\w-]+):\s*([^;]+);/g;
+      let match;
+      while ((match = varRegex.exec(globalsContent)) !== null) {
+        localVars[`--${match[1]}`] = match[2].trim();
+      }
+      console.log('\n┌─── CSS Variables Comparison ─────────────────────────');
+      for (const [varName, refValue] of Object.entries(refVars)) {
+        const localValue = localVars[varName];
+        if (!localValue) {
+          console.log(`│ ${varName}: MISSING in local`);
+        } else if (localValue !== refValue) {
+          console.log(`│ ${varName}: ${localValue} → ${refValue}`);
+        }
+      }
+      console.log('└' + '─'.repeat(55));
+    }
   }
 
   fs.writeFileSync('mapping.json', JSON.stringify(mapping, null, 2));
@@ -911,15 +2017,726 @@ function suggestChange(refValue, property) {
 
 ---
 
+## 이미지 모드 (`--from-image`)
+
+URL 없이 **캡처 이미지**(PNG/JPG/WebP)만으로 디자인을 추출·비교·적용하는 모드.
+와이어프레임, Figma 캡처, 스크린샷 등 정적 이미지를 입력으로 받는다.
+
+```
+/design-sync --from-image ./reference-design.png
+```
+
+### URL 모드 vs 이미지 모드 비교
+
+| 항목 | URL 모드 | 이미지 모드 |
+|------|---------|------------|
+| **입력** | 라이브 URL | 이미지 파일 (PNG/JPG/WebP) |
+| **추출 도구** | Playwright (computed styles) | AI Vision + Sharp (픽셀 분석) |
+| **추출 정밀도** | 정확 (CSS 값 직접) | 높음~중간 (추정치) |
+| **Phase 수** | 7단계 | 5단계 |
+| **hover/인터랙션** | 캡처 가능 | 불가 (정적 이미지) |
+| **반응형** | 멀티 뷰포트 | 단일 (이미지 크기 기준) |
+| **싱크율 목표** | 95%+ | 85~90% |
+
+### 워크플로우 (5단계)
+
+```
+/design-sync --from-image ./design.png
+
+Step I-1 → AI Vision 토큰 추출    이미지 분석 → 색상/타이포/간격/레이아웃 토큰
+Step I-2 → AI Vision 인벤토리     영역 분할 → 컴포넌트 식별·분류
+Step I-3 → 비주얼 비교            로컬 스크린샷 vs 원본 이미지 pixelmatch
+Step I-4 → 매핑 + 수정 적용       기존 Phase 4~5와 동일
+Step I-5 → 최종 검증 + 정리       기존 Phase 6~7과 동일
+```
+
+---
+
+### Phase I-1: AI Vision + Sharp 토큰 추출
+
+URL 모드에서는 Playwright로 computed style을 직접 읽지만, 이미지 모드에서는 **Claude Vision**(멀티모달)으로 구조를 파악하고 **Sharp**(이미지 처리)로 픽셀을 정밀 분석한다.
+
+#### I-1.1 AI Vision 구조 분석
+
+Claude의 멀티모달 기능으로 이미지를 읽어 다음을 추출한다:
+
+**추출 대상:**
+| 항목 | 추출 내용 |
+|------|----------|
+| **레이아웃 구조** | sidebar/header/content 영역 존재 여부, 대략적 비율 |
+| **컴포넌트 식별** | 카드, 테이블, 폼, 버튼, 네비게이션, 배지 등 |
+| **타이포그래피** | 제목/본문/캡션 크기 비율, 굵기, 정렬 |
+| **색상 테마** | 주요 색상 (primary, background, text, accent) |
+| **간격 패턴** | 컴포넌트 간 간격 비율, padding 패턴 |
+| **그리드/플렉스** | 컬럼 수, 정렬 방식, gap 패턴 |
+| **아이콘** | 아이콘 존재 위치, 대략적 크기 |
+
+**프롬프트 템플릿:**
+```
+이 UI 캡처 이미지를 분석하여 다음 정보를 JSON으로 추출해주세요:
+
+1. layout: { type: "sidebar+header+content" | "header+content" | "fullwidth",
+   sidebar: { width: "약 Npx", position: "left|right" },
+   header: { height: "약 Npx" } }
+
+2. components: [{
+   type: "card|table|form|button|nav|badge|heading|text",
+   area: "sidebar|header|content",
+   position: { x: "약 N%", y: "약 N%", width: "약 N%", height: "약 Npx" },
+   description: "컴포넌트 설명" }]
+
+3. typography: {
+   headings: [{ level: 1-5, estimatedSize: "Npx", weight: "bold|medium|normal", align: "left|center" }],
+   body: { estimatedSize: "Npx", weight: "normal", lineHeight: "약 N배" },
+   caption: { estimatedSize: "Npx", color: "밝은회색|중간회색 등" } }
+
+4. colors: {
+   primary: "색상 설명 (파란계열 등)",
+   background: "흰색|밝은회색 등",
+   text: { heading: "진한회색|검정", body: "중간회색", muted: "밝은회색" },
+   accent: "강조색 설명",
+   border: "보더 색상" }
+
+5. spacing: {
+   density: "compact|normal|spacious",
+   componentGap: "약 Npx",
+   sectionGap: "약 Npx",
+   cardPadding: "약 Npx" }
+
+6. borders: { radius: "none|small|medium|large", style: "solid|none", color: "설명" }
+```
+
+#### I-1.2 Sharp 픽셀 분석
+
+AI Vision의 추정치를 **Sharp 라이브러리**로 정밀 보정한다.
+
+**분석 항목:**
+
+| 분석 | 방법 | 출력 |
+|------|------|------|
+| **색상 팔레트** | 이미지 전체 픽셀 → k-means 클러스터링 (k=15) | 상위 15개 색상 + 빈도 + Tailwind 매핑 |
+| **영역 바운딩박스** | 행/열별 색상 변화 감지 → 경계선 추출 | sidebar/header/content 좌표 |
+| **간격 측정** | 동일 배경색 영역 간 거리 측정 | gap/padding 값 (px) |
+| **텍스트 영역 높이** | 텍스트 배경과 다른 영역의 높이 → fontSize 추정 | 높이 × 0.75 ≈ fontSize |
+| **보더 감지** | 1px 너비 직선 감지 (수평/수직) | border 존재 여부, 색상 |
+| **그림자 감지** | 영역 경계 주변 그라데이션 감지 | shadow 존재 여부, 크기 |
+
+**스크립트 템플릿 E: analyze-image.js**
+
+```javascript
+import sharp from 'sharp';
+import fs from 'fs';
+
+const IMAGE_PATH = '<<IMAGE_PATH>>';
+
+// --- 색상 팔레트 추출 ---
+async function extractColorPalette(imagePath, sampleSize = 10000) {
+  const { data, info } = await sharp(imagePath)
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { width, height, channels } = info;
+  const totalPixels = width * height;
+  const step = Math.max(1, Math.floor(totalPixels / sampleSize));
+
+  // 색상 빈도 집계 (8비트 양자화로 유사 색상 병합)
+  const colorMap = new Map();
+  for (let i = 0; i < totalPixels; i += step) {
+    const offset = i * channels;
+    // 8단계 양자화 (32 단위로 반올림)
+    const r = Math.round(data[offset] / 32) * 32;
+    const g = Math.round(data[offset + 1] / 32) * 32;
+    const b = Math.round(data[offset + 2] / 32) * 32;
+    const key = `${r},${g},${b}`;
+    colorMap.set(key, (colorMap.get(key) || 0) + 1);
+  }
+
+  // 빈도순 정렬 → 상위 15개
+  const sorted = [...colorMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15)
+    .map(([rgb, count]) => {
+      const [r, g, b] = rgb.split(',').map(Number);
+      return {
+        rgb: `rgb(${r}, ${g}, ${b})`,
+        hex: `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`,
+        frequency: (count / sampleSize * 100).toFixed(1) + '%',
+        tailwind: mapToTailwindColor(r, g, b),
+      };
+    });
+
+  return sorted;
+}
+
+// Tailwind gray 스케일 근사 매핑
+function mapToTailwindColor(r, g, b) {
+  // 무채색 감지 (R≈G≈B)
+  const isGray = Math.max(r, g, b) - Math.min(r, g, b) < 30;
+  if (isGray) {
+    const avg = (r + g + b) / 3;
+    if (avg > 250) return 'white';
+    if (avg > 245) return 'gray-50';
+    if (avg > 235) return 'gray-100';
+    if (avg > 215) return 'gray-200';
+    if (avg > 190) return 'gray-300';
+    if (avg > 150) return 'gray-400';
+    if (avg > 115) return 'gray-500';
+    if (avg > 85) return 'gray-600';
+    if (avg > 60) return 'gray-700';
+    if (avg > 40) return 'gray-800';
+    if (avg > 20) return 'gray-900';
+    return 'gray-950';
+  }
+  // 유채색 — 가장 가까운 Tailwind 색상 계열 반환
+  if (r > g && r > b) return b > 100 ? 'purple/pink' : 'red/orange';
+  if (g > r && g > b) return 'green';
+  if (b > r && b > g) return r > 100 ? 'purple' : 'blue';
+  return 'neutral';
+}
+
+// --- 영역 경계 감지 ---
+async function detectRegions(imagePath) {
+  const { data, info } = await sharp(imagePath)
+    .greyscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { width, height } = info;
+
+  // 수직 스캔: 사이드바 경계 찾기
+  // 좌측에서 우측으로 스캔하며 급격한 색상 변화 위치 감지
+  let sidebarRight = 0;
+  for (let x = 150; x < Math.min(350, width); x++) {
+    let changes = 0;
+    for (let y = 0; y < height; y += 5) {
+      const curr = data[y * width + x];
+      const next = data[y * width + x + 1];
+      if (Math.abs(curr - next) > 30) changes++;
+    }
+    // 수직 경계선 = 많은 y 좌표에서 색상 변화
+    if (changes > height / 20) {
+      sidebarRight = x;
+      break;
+    }
+  }
+
+  // 수평 스캔: 헤더 하단 경계 찾기
+  let headerBottom = 0;
+  for (let y = 30; y < Math.min(120, height); y++) {
+    let changes = 0;
+    const start = sidebarRight || 0;
+    for (let x = start; x < width; x += 5) {
+      const curr = data[y * width + x];
+      const next = data[(y + 1) * width + x];
+      if (Math.abs(curr - next) > 30) changes++;
+    }
+    if (changes > (width - start) / 20) {
+      headerBottom = y;
+      break;
+    }
+  }
+
+  return {
+    sidebar: sidebarRight > 0 ? { x: 0, y: 0, width: sidebarRight, height } : null,
+    header: headerBottom > 0 ? { x: sidebarRight, y: 0, width: width - sidebarRight, height: headerBottom } : null,
+    content: { x: sidebarRight, y: headerBottom, width: width - sidebarRight, height: height - headerBottom },
+    imageSize: { width, height },
+  };
+}
+
+// --- 텍스트 영역 높이 기반 fontSize 추정 ---
+async function estimateFontSizes(imagePath, regions) {
+  const { data, info } = await sharp(imagePath)
+    .greyscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { width } = info;
+
+  // 콘텐츠 영역에서 텍스트 행 높이 감지
+  const contentRegion = regions.content;
+  const rowHeights = [];
+  let inTextRow = false;
+  let rowStart = 0;
+
+  for (let y = contentRegion.y; y < contentRegion.y + contentRegion.height; y++) {
+    // 행의 평균 밝기 계산
+    let sum = 0;
+    for (let x = contentRegion.x; x < contentRegion.x + contentRegion.width; x += 3) {
+      sum += data[y * width + x];
+    }
+    const avgBrightness = sum / (contentRegion.width / 3);
+
+    // 텍스트 행 = 배경보다 어두운 영역
+    const isText = avgBrightness < 230;
+    if (isText && !inTextRow) {
+      inTextRow = true;
+      rowStart = y;
+    } else if (!isText && inTextRow) {
+      inTextRow = false;
+      const rowHeight = y - rowStart;
+      if (rowHeight > 8 && rowHeight < 80) {
+        rowHeights.push(rowHeight);
+      }
+    }
+  }
+
+  // 높이 → fontSize 추정 (높이 × 0.75)
+  const fontSizes = [...new Set(rowHeights.map(h => Math.round(h * 0.75)))]
+    .sort((a, b) => a - b);
+
+  // Tailwind 스케일에 가장 가까운 값으로 스냅
+  const TAILWIND_SCALE = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72];
+  const snapped = fontSizes.map(fs => {
+    const nearest = TAILWIND_SCALE.reduce((a, b) =>
+      Math.abs(b - fs) < Math.abs(a - fs) ? b : a);
+    return { estimated: fs, snapped: nearest, tailwind: `text-${
+      {12:'xs',14:'sm',16:'base',18:'lg',20:'xl',24:'2xl',30:'3xl',36:'4xl',48:'5xl',60:'6xl',72:'7xl'}[nearest] || `[${nearest}px]`
+    }` };
+  });
+
+  return snapped;
+}
+
+// --- 간격 패턴 감지 ---
+async function detectSpacing(imagePath, regions) {
+  const { data, info } = await sharp(imagePath)
+    .greyscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { width } = info;
+  const contentRegion = regions.content;
+
+  // 콘텐츠 영역에서 동일 배경색 수평 띠 (간격) 감지
+  const gaps = [];
+  let inGap = false;
+  let gapStart = 0;
+  const bgThreshold = 245; // 밝은 배경
+
+  for (let y = contentRegion.y; y < contentRegion.y + contentRegion.height; y++) {
+    let sum = 0;
+    for (let x = contentRegion.x; x < contentRegion.x + contentRegion.width; x += 5) {
+      sum += data[y * width + x];
+    }
+    const avg = sum / (contentRegion.width / 5);
+    const isBg = avg > bgThreshold;
+
+    if (isBg && !inGap) {
+      inGap = true;
+      gapStart = y;
+    } else if (!isBg && inGap) {
+      inGap = false;
+      const gapSize = y - gapStart;
+      if (gapSize >= 4 && gapSize <= 96) {
+        gaps.push(gapSize);
+      }
+    }
+  }
+
+  // 빈도순 정렬 → Tailwind 간격으로 매핑
+  const gapFreq = new Map();
+  gaps.forEach(g => {
+    // 4px 단위로 스냅
+    const snapped = Math.round(g / 4) * 4;
+    gapFreq.set(snapped, (gapFreq.get(snapped) || 0) + 1);
+  });
+
+  return [...gapFreq.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([px, count]) => ({ px: `${px}px`, count, tailwind: `${px / 4}` }));
+}
+
+// --- 메인 실행 ---
+(async () => {
+  console.log(`Analyzing image: ${IMAGE_PATH}`);
+  console.log('='.repeat(60));
+
+  // 1. 색상 팔레트
+  console.log('\n[1/4] Extracting color palette...');
+  const colors = await extractColorPalette(IMAGE_PATH);
+  console.log(`  Found ${colors.length} dominant colors`);
+  colors.forEach(c => console.log(`  ${c.hex} (${c.frequency}) → ${c.tailwind}`));
+
+  // 2. 영역 감지
+  console.log('\n[2/4] Detecting regions...');
+  const regions = await detectRegions(IMAGE_PATH);
+  console.log(`  Sidebar: ${regions.sidebar ? `${regions.sidebar.width}px wide` : 'not detected'}`);
+  console.log(`  Header: ${regions.header ? `${regions.header.height}px tall` : 'not detected'}`);
+  console.log(`  Content: ${regions.content.width}×${regions.content.height}px`);
+
+  // 3. 폰트 크기 추정
+  console.log('\n[3/4] Estimating font sizes...');
+  const fontSizes = await estimateFontSizes(IMAGE_PATH, regions);
+  fontSizes.forEach(f => console.log(`  ~${f.estimated}px → ${f.snapped}px (${f.tailwind})`));
+
+  // 4. 간격 패턴
+  console.log('\n[4/4] Detecting spacing patterns...');
+  const spacing = await detectSpacing(IMAGE_PATH, regions);
+  spacing.forEach(s => console.log(`  ${s.px} × ${s.count}회 → spacing-${s.tailwind}`));
+
+  // tokens.json 생성 (URL 모드와 동일 포맷)
+  const tokens = {
+    meta: {
+      source: IMAGE_PATH,
+      mode: 'image',
+      extractedAt: new Date().toISOString(),
+      imageSize: regions.imageSize,
+      confidence: 'MEDIUM', // 이미지 모드는 URL 모드보다 낮은 신뢰도
+    },
+    tokens: {
+      colors: colors.map(c => ({
+        value: c.rgb,
+        hex: c.hex,
+        tailwind: c.tailwind,
+        frequency: c.frequency,
+      })),
+      typography: Object.fromEntries(
+        fontSizes.map((f, i) => [
+          i === 0 ? 'caption' : i === fontSizes.length - 1 ? 'h1' :
+          i === fontSizes.length - 2 ? 'h2' : 'body',
+          { fontSize: `${f.snapped}px`, tailwind: f.tailwind }
+        ])
+      ),
+      spacing: {
+        baseUnit: '4px',
+        scale: spacing.map(s => s.px),
+        dominant: spacing.slice(0, 3).map(s => s.px),
+      },
+      regions,
+    },
+  };
+
+  fs.writeFileSync('tokens.json', JSON.stringify(tokens, null, 2));
+  console.log('\n' + '='.repeat(60));
+  console.log('Saved: tokens.json');
+})().catch(console.error);
+```
+
+#### I-1.3 AI Vision + Sharp 결과 통합
+
+Sharp의 정밀 데이터로 AI Vision의 추정치를 **보정**한다:
+
+| 항목 | AI Vision (구조) | Sharp (정밀) | 통합 방법 |
+|------|-----------------|-------------|----------|
+| 색상 | "파란 계열 primary" | `#3B82F6` → `blue-500` | Sharp 우선 |
+| 폰트 크기 | "제목은 큰 글자" | `~24px` → `text-2xl` | Sharp 측정 + Tailwind 스냅 |
+| 레이아웃 | "sidebar + content" | sidebar 너비 `256px` | AI 구조 + Sharp 치수 |
+| 간격 | "여유있는 간격" | `16px, 24px 반복` | Sharp 측정 + 패턴 |
+| 컴포넌트 | "카드 3개 가로 배치" | 3등분 영역 감지 | AI 식별 + Sharp 좌표 |
+
+---
+
+### Phase I-2: AI Vision 컴포넌트 인벤토리
+
+이미지를 **격자 분할**하여 영역별 컴포넌트를 식별한다.
+
+#### I-2.1 영역 분할 전략
+
+Phase I-1에서 감지한 regions를 기반으로 이미지를 크롭하여 개별 분석한다:
+
+```
+1. sidebar 영역 크롭 → AI Vision으로 메뉴 아이템, 로고, 아이콘 식별
+2. header 영역 크롭 → AI Vision으로 검색바, 사용자 메뉴, 알림 아이콘 식별
+3. content 영역 크롭 → AI Vision으로 카드, 테이블, 폼, 차트 식별
+4. content를 추가 격자 분할 → 개별 컴포넌트 상세 분석
+```
+
+#### I-2.2 컴포넌트 상세 추출
+
+각 식별된 컴포넌트에 대해:
+
+```json
+{
+  "area": "content",
+  "type": "card",
+  "position": { "x": 300, "y": 100, "width": 320, "height": 180 },
+  "styles": {
+    "backgroundColor": "white",
+    "borderRadius": "rounded-lg",
+    "border": "border border-gray-200",
+    "padding": "p-4 또는 p-6",
+    "shadow": "shadow-sm 또는 none"
+  },
+  "children": [
+    { "type": "heading", "estimatedSize": "text-sm", "weight": "font-medium" },
+    { "type": "text", "estimatedSize": "text-2xl", "weight": "font-bold" },
+    { "type": "text", "estimatedSize": "text-xs", "color": "text-gray-500" }
+  ]
+}
+```
+
+#### I-2.3 Sharp 영역 크롭 스크립트
+
+```javascript
+import sharp from 'sharp';
+import fs from 'fs';
+
+const IMAGE_PATH = '<<IMAGE_PATH>>';
+const TOKENS_PATH = 'tokens.json';
+
+(async () => {
+  const tokens = JSON.parse(fs.readFileSync(TOKENS_PATH, 'utf-8'));
+  const regions = tokens.tokens.regions;
+
+  // 영역별 크롭 이미지 생성
+  const crops = [];
+  if (regions.sidebar) {
+    const buf = await sharp(IMAGE_PATH)
+      .extract({ left: regions.sidebar.x, top: regions.sidebar.y,
+        width: regions.sidebar.width, height: regions.sidebar.height })
+      .toBuffer();
+    fs.writeFileSync('region-sidebar.png', buf);
+    crops.push('region-sidebar.png');
+    console.log(`Sidebar: ${regions.sidebar.width}×${regions.sidebar.height}px`);
+  }
+
+  if (regions.header) {
+    const buf = await sharp(IMAGE_PATH)
+      .extract({ left: regions.header.x, top: regions.header.y,
+        width: regions.header.width, height: regions.header.height })
+      .toBuffer();
+    fs.writeFileSync('region-header.png', buf);
+    crops.push('region-header.png');
+    console.log(`Header: ${regions.header.width}×${regions.header.height}px`);
+  }
+
+  // 콘텐츠 영역 → 4분할 격자
+  const cx = regions.content.x, cy = regions.content.y;
+  const cw = regions.content.width, ch = regions.content.height;
+  const halfW = Math.floor(cw / 2), halfH = Math.floor(ch / 2);
+
+  const quadrants = [
+    { name: 'content-tl', left: cx, top: cy, width: halfW, height: halfH },
+    { name: 'content-tr', left: cx + halfW, top: cy, width: cw - halfW, height: halfH },
+    { name: 'content-bl', left: cx, top: cy + halfH, width: halfW, height: ch - halfH },
+    { name: 'content-br', left: cx + halfW, top: cy + halfH, width: cw - halfW, height: ch - halfH },
+  ];
+
+  for (const q of quadrants) {
+    if (q.width > 10 && q.height > 10) {
+      const buf = await sharp(IMAGE_PATH)
+        .extract({ left: q.left, top: q.top, width: q.width, height: q.height })
+        .toBuffer();
+      fs.writeFileSync(`region-${q.name}.png`, buf);
+      crops.push(`region-${q.name}.png`);
+      console.log(`${q.name}: ${q.width}×${q.height}px`);
+    }
+  }
+
+  console.log(`\nCropped ${crops.length} regions: ${crops.join(', ')}`);
+  console.log('→ AI Vision으로 각 크롭 이미지를 분석하여 inventory.json 생성');
+})().catch(console.error);
+```
+
+#### I-2.4 인벤토리 생성
+
+AI Vision으로 각 크롭 이미지를 분석한 결과를 **URL 모드와 동일한 inventory.json 포맷**으로 통합한다:
+
+```json
+{
+  "meta": { "source": "image", "imagePath": "./design.png" },
+  "pages": {
+    "main": {
+      "sidebar": {
+        "navigation": [
+          { "area": "sidebar", "type": "navigation", "tag": "nav",
+            "text": "Dashboard", "fontSize": "14px", "fontWeight": "500",
+            "color": "text-gray-700", "bgColor": "transparent",
+            "padding": "8px 16px", "borderRadius": "6px" }
+        ]
+      },
+      "content": {
+        "card": [
+          { "area": "content", "type": "card", "tag": "div",
+            "dimensions": "320 × 180",
+            "bgColor": "white", "borderRadius": "8px",
+            "border": "1px solid rgb(229,231,235)",
+            "padding": "16px", "boxShadow": "none" }
+        ]
+      }
+    }
+  }
+}
+```
+
+---
+
+### Phase I-3: 비주얼 비교 (이미지 vs 로컬)
+
+원본 이미지와 로컬 개발 서버의 스크린샷을 **pixelmatch**로 비교한다.
+
+#### I-3.1 비교 방법
+
+1. 원본 이미지를 Sharp로 리사이즈 (로컬 뷰포트 크기에 맞춤)
+2. 로컬 개발 서버(`localhost:3000`)를 Playwright로 스크린샷
+3. pixelmatch로 비교 → 싱크율 산출
+
+```javascript
+import sharp from 'sharp';
+import { chromium } from 'playwright';
+import { PNG } from 'pngjs';
+import pixelmatch from 'pixelmatch';
+import fs from 'fs';
+
+const IMAGE_PATH = '<<IMAGE_PATH>>';
+const LOCAL_URL = 'http://localhost:3000';
+const VIEWPORT = { width: 1366, height: 900 };
+
+(async () => {
+  // 1. 원본 이미지를 뷰포트 크기로 리사이즈 → PNG 변환
+  const refBuffer = await sharp(IMAGE_PATH)
+    .resize(VIEWPORT.width, VIEWPORT.height, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
+    .png()
+    .toBuffer();
+
+  fs.writeFileSync('ref-resized.png', refBuffer);
+  console.log(`Reference image resized to ${VIEWPORT.width}×${VIEWPORT.height}`);
+
+  // 2. 로컬 스크린샷 캡처
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: VIEWPORT });
+  await page.addInitScript(() => {
+    const style = document.createElement('style');
+    style.textContent = '*, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }';
+    document.head.appendChild(style);
+  });
+  await page.goto(LOCAL_URL, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.waitForTimeout(2000);
+  const localBuffer = await page.screenshot({ fullPage: false });
+  fs.writeFileSync('local-screenshot.png', localBuffer);
+  await browser.close();
+
+  // 3. pixelmatch 비교
+  const refPng = PNG.sync.read(refBuffer);
+  const localPng = PNG.sync.read(localBuffer);
+
+  const w = Math.min(refPng.width, localPng.width);
+  const h = Math.min(refPng.height, localPng.height);
+
+  function cropData(png, tw, th) {
+    if (png.width === tw && png.height === th) return png.data;
+    const out = Buffer.alloc(tw * th * 4);
+    for (let y = 0; y < th; y++) {
+      png.data.copy(out, y * tw * 4, y * png.width * 4, y * png.width * 4 + tw * 4);
+    }
+    return out;
+  }
+
+  const dataA = cropData(refPng, w, h);
+  const dataB = cropData(localPng, w, h);
+  const diff = new PNG({ width: w, height: h });
+
+  // 이미지 모드는 기본 threshold를 0.2로 높임 (렌더링 차이 허용)
+  const numDiff = pixelmatch(dataA, dataB, diff.data, w, h, {
+    threshold: 0.2,
+    includeAA: false,
+  });
+
+  const total = w * h;
+  const syncRate = ((1 - numDiff / total) * 100).toFixed(1);
+
+  fs.writeFileSync('diff-image-mode.png', PNG.sync.write(diff));
+
+  console.log('\n' + '='.repeat(60));
+  console.log('  IMAGE MODE VISUAL COMPARISON');
+  console.log('='.repeat(60));
+  console.log(`  Sync Rate: ${syncRate}%`);
+  console.log(`  Diff pixels: ${numDiff.toLocaleString()} / ${total.toLocaleString()}`);
+  console.log(`  Diff image: diff-image-mode.png`);
+
+  // 정밀 비교
+  const diff2 = new PNG({ width: w, height: h });
+  const numDiff2 = pixelmatch(dataA, dataB, diff2.data, w, h, {
+    threshold: 0.1,
+    includeAA: false,
+  });
+  const syncRate2 = ((1 - numDiff2 / total) * 100).toFixed(1);
+  fs.writeFileSync('diff-image-precision.png', PNG.sync.write(diff2));
+  console.log(`  Precision Sync: ${syncRate2}%`);
+
+  // 텍스트 마스킹 비교
+  const browser2 = await chromium.launch({ headless: true });
+  const page2 = await browser2.newPage({ viewport: VIEWPORT });
+  await page2.addInitScript(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      *, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }
+      h1,h2,h3,h4,h5,h6,p,span,a,label,li,td,th,button { color: transparent !important; }
+    `;
+    document.head.appendChild(style);
+  });
+  await page2.goto(LOCAL_URL, { waitUntil: 'networkidle', timeout: 30000 });
+  await page2.waitForTimeout(2000);
+  const maskedBuffer = await page2.screenshot({ fullPage: false });
+  await browser2.close();
+
+  // 원본도 텍스트 영역 마스킹 (Sharp로 텍스트 영역 블러)
+  // 이미지 모드에서는 텍스트 정확도보다 레이아웃 비교가 중요
+  const maskedPng = PNG.sync.read(maskedBuffer);
+  const { width: mw, height: mh, dataA: mA, dataB: mB } = (() => {
+    const tw = Math.min(refPng.width, maskedPng.width);
+    const th = Math.min(refPng.height, maskedPng.height);
+    return { width: tw, height: th, dataA: cropData(refPng, tw, th), dataB: cropData(maskedPng, tw, th) };
+  })();
+  const mdiff = new PNG({ width: mw, height: mh });
+  const mNumDiff = pixelmatch(mA, mB, mdiff.data, mw, mh, { threshold: 0.2, includeAA: false });
+  console.log(`  Layout-only Sync (text masked): ${((1 - mNumDiff / (mw * mh)) * 100).toFixed(1)}%`);
+
+  console.log('-'.repeat(60));
+})().catch(console.error);
+```
+
+#### I-3.2 이미지 모드 싱크율 해석
+
+| 싱크율 | 판정 | 조치 |
+|--------|------|------|
+| 90%+ | 우수 | 미세 조정만 필요 |
+| 80~90% | 양호 | 특정 영역 diff 이미지 분석 → 수동 조정 |
+| 70~80% | 보통 | 레이아웃 구조부터 재검토 |
+| < 70% | 미달 | AI Vision 분석 재실행, 컴포넌트 구조 재설계 |
+
+**이미지 모드 특수 고려사항:**
+- 텍스트 내용 차이는 무시 (마스킹 비교 우선)
+- 아이콘 차이는 별도 처리 (종류가 다를 수 있음)
+- 이미지/사진 콘텐츠는 비교 대상에서 제외
+- 폰트 렌더링 차이는 threshold 0.2로 허용
+
+---
+
+### Phase I-4~I-5: 기존 Phase 4~7 합류
+
+이미지 모드의 tokens.json, inventory.json이 생성되면, **기존 URL 모드의 Phase 4 (매핑 + Diff), Phase 5 (수정 적용), Phase 6 (최종 검증), Phase 7 (학습 + 정리)**를 그대로 실행한다.
+
+유일한 차이:
+- 비교 대상이 "URL 재캡처"가 아닌 "원본 이미지 (리사이즈)"
+- threshold가 0.15가 아닌 0.2 (이미지 모드 허용 범위)
+- hover/인터랙션 비교는 생략
+
+---
+
+### 이미지 모드 필요 의존성
+
+```bash
+npm install -D sharp         # 이미지 분석
+npm install -D playwright    # 로컬 스크린샷
+npm install -D pixelmatch    # 비교
+npm install -D pngjs         # PNG 처리
+```
+
+---
+
 ## 규칙
 
 - Playwright가 설치되어 있어야 한다 (`npx playwright install chromium`)
 - `pixelmatch`와 `pngjs`가 devDependencies에 있어야 한다
+- 이미지 모드 사용 시 `sharp`도 devDependencies에 있어야 한다
 - 추출 스크립트는 `scripts/` 에 임시 작성 → 완료 후 삭제
 - 스크린샷/diff 이미지도 완료 후 삭제
 - `tokens.json`, `inventory.json`, `mapping.json`은 작업 중 프로젝트 루트에 생성 → 완료 후 삭제 (학습 저장 시 `learned/`로 복사)
 - 수정 후 반드시 `npx tsc --noEmit && npm test` 검증
-- **6 카테고리 × 12 속성** 모두 동일 깊이로 추출·비교
+- **7 카테고리 × 15 속성** 모두 동일 깊이로 추출·비교
 - 시각적 회귀 테스트는 **수정 전후** 두 번 실행하여 개선을 정량화
 - 로컬 개발 서버(`localhost:3000`)가 실행 중이어야 시각적 회귀 테스트 가능
 
@@ -947,6 +2764,203 @@ function suggestChange(refValue, property) {
 | 600 | font-semibold |
 | 700 | font-bold |
 | 800 | font-extrabold |
+
+### 행간 (lineHeight)
+| CSS | Tailwind |
+|-----|----------|
+| 16px | leading-4 |
+| 20px | leading-5 |
+| 24px | leading-6 |
+| 28px | leading-7 |
+| 32px | leading-8 |
+| 36px | leading-9 |
+| 40px | leading-10 |
+| 1 | leading-none |
+| 1.25 | leading-tight |
+| 1.375 | leading-snug |
+| 1.5 | leading-normal |
+| 1.625 | leading-relaxed |
+| 2 | leading-loose |
+
+### 자간 (letterSpacing)
+| CSS | Tailwind |
+|-----|----------|
+| -0.05em | tracking-tighter |
+| -0.025em | tracking-tight |
+| 0em / normal | tracking-normal |
+| 0.025em | tracking-wide |
+| 0.05em | tracking-wider |
+| 0.1em | tracking-widest |
+
+### 폰트 패밀리
+| 패턴 | Tailwind |
+|------|----------|
+| sans-serif 계열 (Geist, Inter, Pretendard 등) | font-sans |
+| serif 계열 (Georgia, Times 등) | font-serif |
+| monospace 계열 (Geist Mono, JetBrains Mono 등) | font-mono |
+| 커스텀 폰트 | font-[폰트명] |
+
+### 폰트 스타일
+| CSS | Tailwind |
+|-----|----------|
+| italic | italic |
+| normal | not-italic |
+
+### 텍스트 정렬
+| CSS | Tailwind |
+|-----|----------|
+| left | text-left |
+| center | text-center |
+| right | text-right |
+| justify | text-justify |
+
+### 텍스트 변환
+| CSS | Tailwind |
+|-----|----------|
+| uppercase | uppercase |
+| lowercase | lowercase |
+| capitalize | capitalize |
+| none | normal-case |
+
+### 공백 처리 (whiteSpace)
+| CSS | Tailwind |
+|-----|----------|
+| nowrap | whitespace-nowrap |
+| pre | whitespace-pre |
+| pre-line | whitespace-pre-line |
+| pre-wrap | whitespace-pre-wrap |
+| normal | whitespace-normal |
+
+### 단어 줄바꿈
+| CSS | Tailwind |
+|-----|----------|
+| word-break: break-all | break-all |
+| word-break: keep-all | break-keep |
+| overflow-wrap: break-word | break-words |
+
+### Flex 방향
+| CSS | Tailwind |
+|-----|----------|
+| row | flex-row |
+| row-reverse | flex-row-reverse |
+| column | flex-col |
+| column-reverse | flex-col-reverse |
+
+### Flex 줄바꿈
+| CSS | Tailwind |
+|-----|----------|
+| nowrap | flex-nowrap |
+| wrap | flex-wrap |
+| wrap-reverse | flex-wrap-reverse |
+
+### 정렬 (alignItems)
+| CSS | Tailwind |
+|-----|----------|
+| flex-start | items-start |
+| flex-end | items-end |
+| center | items-center |
+| baseline | items-baseline |
+| stretch | items-stretch |
+
+### 배치 (justifyContent)
+| CSS | Tailwind |
+|-----|----------|
+| flex-start | justify-start |
+| flex-end | justify-end |
+| center | justify-center |
+| space-between | justify-between |
+| space-around | justify-around |
+| space-evenly | justify-evenly |
+
+### Grid 컬럼
+| CSS | Tailwind |
+|-----|----------|
+| repeat(1, minmax(0, 1fr)) | grid-cols-1 |
+| repeat(2, minmax(0, 1fr)) | grid-cols-2 |
+| repeat(3, minmax(0, 1fr)) | grid-cols-3 |
+| repeat(4, minmax(0, 1fr)) | grid-cols-4 |
+| repeat(6, minmax(0, 1fr)) | grid-cols-6 |
+| repeat(12, minmax(0, 1fr)) | grid-cols-12 |
+| 커스텀 | grid-cols-[값] |
+
+### Grid Span
+| CSS | Tailwind |
+|-----|----------|
+| span 1 / span 1 | col-span-1 |
+| span 2 / span 2 | col-span-2 |
+| span 3 / span 3 | col-span-3 |
+| 1 / -1 | col-span-full |
+
+### 아이콘 크기
+| CSS (width/height) | Tailwind |
+|-----|----------|
+| 12px | w-3 h-3 |
+| 16px | w-4 h-4 |
+| 20px | w-5 h-5 |
+| 24px | w-6 h-6 |
+| 32px | w-8 h-8 |
+| 40px | w-10 h-10 |
+| 48px | w-12 h-12 |
+
+### 텍스트 꾸밈 (textDecoration)
+| CSS | Tailwind |
+|-----|----------|
+| underline | underline |
+| overline | overline |
+| line-through | line-through |
+| none | no-underline |
+
+### 텍스트 오버플로우
+| CSS | Tailwind |
+|-----|----------|
+| text-overflow: ellipsis + overflow: hidden + white-space: nowrap | truncate |
+| overflow: hidden + -webkit-line-clamp: N | line-clamp-N |
+
+### 오버플로우
+| CSS | Tailwind |
+|-----|----------|
+| hidden | overflow-hidden |
+| auto | overflow-auto |
+| scroll | overflow-scroll |
+| visible | overflow-visible |
+
+### 보더 너비
+| CSS | Tailwind |
+|-----|----------|
+| 0px | border-0 |
+| 1px | border |
+| 2px | border-2 |
+| 4px | border-4 |
+| 8px | border-8 |
+
+### z-index
+| CSS | Tailwind |
+|-----|----------|
+| 0 | z-0 |
+| 10 | z-10 |
+| 20 | z-20 |
+| 30 | z-30 |
+| 40 | z-40 |
+| 50 | z-50 |
+
+### 커스텀 스크롤바
+| 스타일 | Tailwind / CSS |
+|--------|----------------|
+| 스크롤바 숨김 | `scrollbar-hide` 또는 `::-webkit-scrollbar { display: none }` |
+| 얇은 스크롤바 | `scrollbar-thin` 또는 `scrollbar-width: thin` |
+| 스크롤바 색상 | `scrollbar-thumb-gray-300 scrollbar-track-transparent` |
+
+### 트랜지션
+| CSS | Tailwind |
+|-----|----------|
+| 150ms | duration-150 |
+| 200ms | duration-200 |
+| 300ms | duration-300 |
+| 500ms | duration-500 |
+| ease | ease-in-out |
+| ease-in | ease-in |
+| ease-out | ease-out |
+| linear | ease-linear |
 
 ### 간격 (padding/margin/gap)
 | CSS | Tailwind |

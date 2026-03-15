@@ -187,7 +187,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | 스킬 | 호출 | 설명 |
 |------|------|------|
 | `commit` | `/commit` | Conventional Commit 자동 생성 |
-| `design-sync` | `/design-sync <URL>` | 디자인 URL에서 CSS 추출 → 코드 싱크 |
+| `design-sync` | `/design-sync <URL\|이미지>` | 디자인 URL/캡처 이미지에서 CSS 추출 → 코드 싱크 ([상세](#design-sync-상세)) |
 | `feedback` | `/feedback` | 최근 변경사항 품질 분석 |
 | `review-pr` | `/review-pr [N]` | GitHub PR 코드 리뷰 |
 | `scaffold` | `/scaffold [domain]` | 새 도메인 보일러플레이트 생성 |
@@ -216,6 +216,134 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `git.md` | Conventional Commits, 브랜치 네이밍, PR 규칙, HARD-GATE (20개 파일) |
 | `donts.md` | 코드 품질, 보안, 패턴, 완료 기준 금지 사항 (15항목) |
 | `templates/rules/supabase.md` | Supabase 프로젝트용 규칙 (선택) |
+
+## Design Sync 상세
+
+참고 디자인(URL 또는 캡처 이미지)에서 CSS를 자동 추출하여 코드베이스에 적용하고, 정량적 싱크율로 검증하는 스킬.
+
+### 사용법
+
+```bash
+# URL 기반 — 7단계 전체 워크플로우
+/design-sync https://example.figma.site
+
+# URL 기반 — 특정 페이지만
+/design-sync https://example.figma.site /dashboard
+
+# 이미지 기반 — 5단계 워크플로우
+/design-sync --from-image ./reference-design.png
+
+# 검증만
+/design-sync --verify-only
+
+# 토큰 추출만
+/design-sync --tokens-only
+```
+
+### URL 모드 (7단계)
+
+라이브 URL에서 Playwright로 computed style을 직접 추출한다. 가장 정밀하며 **싱크율 95% 이상** 목표.
+
+```
+Step 1 → 기준 측정       참고 + 로컬 스크린샷 비교 → 초기 싱크율
+Step 2 → 토큰 추출       보정 계수 자동 산출 + 글로벌 토큰 JSON
+Step 3 → 인벤토리        전체 페이지 원패스 추출 → 영역/타입별 분류
+Step 4 → 매핑 + Diff     참고 요소 ↔ 코드베이스 매핑 → 변경 제안
+Step 5 → 수정 적용       파일별 × 카테고리별 수정, tsc+test 검증
+Step 6 → 최종 검증       다시 스크린샷 비교 → 최종 싱크율
+Step 7 → 학습 + 정리     90%↑ 시 패턴 저장, 임시 파일 삭제
+```
+
+### 이미지 모드 (5단계)
+
+URL 없이 캡처 이미지(PNG/JPG/WebP)만으로 디자인을 추출한다. **AI Vision + Sharp** 조합으로 분석하며 **싱크율 85~90%** 목표.
+
+```
+Step I-1 → AI Vision 토큰 추출    이미지 분석 → 색상/타이포/간격/레이아웃
+Step I-2 → AI Vision 인벤토리     영역 분할 → 컴포넌트 식별·분류
+Step I-3 → 비주얼 비교            로컬 스크린샷 vs 원본 이미지 pixelmatch
+Step I-4 → 매핑 + 수정 적용       URL 모드 Phase 4~5와 동일
+Step I-5 → 최종 검증 + 정리       URL 모드 Phase 6~7과 동일
+```
+
+### 추출 범위
+
+**7개 요소 카테고리:**
+
+| # | 카테고리 | 대상 요소 |
+|---|---------|----------|
+| 1 | 레이아웃 | `aside`, `header`, `main`, `nav`, 사이드바 |
+| 2 | 헤딩 | `h1`~`h5` — 페이지/카드/섹션 제목 |
+| 3 | 텍스트 | `p`, `span`, `label`, `li`, `a` — 설명, 배지, 링크 |
+| 4 | 카드/컨테이너 | `div`(border/bg/rounded), `section` |
+| 5 | 폼 | `input`, `select`, `button`, `textarea` |
+| 6 | 테이블 | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
+| 7 | 아이콘 | `svg`, `img[src*=".svg"]` — 크기, 색상, strokeWidth |
+
+**15개 속성 카테고리:**
+
+| # | 카테고리 | 주요 속성 |
+|---|---------|----------|
+| 1 | 셀렉터 | `tag.className` |
+| 2 | 크기 | `width`, `height` |
+| 3 | 색상 | `color`, `backgroundColor`, `opacity` |
+| 4 | 서체 | `fontFamily`, `fontSize`, `fontWeight`, `fontStyle`, `lineHeight`, `letterSpacing` |
+| 5 | 텍스트 | `textAlign`, `textTransform`, `textDecoration`, `whiteSpace`, `textOverflow`, `wordBreak` |
+| 6 | 패딩 | 4방향 축약 |
+| 7 | 마진 | 4방향 축약 |
+| 8 | 보더 | `border`, `borderColor`, `borderWidth`, `borderRadius` |
+| 9 | 시각효과 | `boxShadow`, `backgroundImage` |
+| 10 | 레이아웃 | `display`, `flex*`, `grid*`, `gap`, `position`, `overflow`, `zIndex` |
+| 11 | 인터랙션 | `cursor`, `transition`, `transitionDuration`, `transitionTimingFunction` |
+| 12 | 접근성 | Contrast ratio, accessible name, ARIA role |
+| 13 | CSS 변수 | `--background`, `--foreground`, `--primary` 등 |
+| 14 | 의사 요소 | `::before`, `::after` — content, 크기, 색상 |
+| 15 | 아이콘 | SVG `width`, `height`, `stroke`, `fill` |
+
+### 비주얼 비교 기능
+
+URL 모드에서는 다음 비교를 모두 수행한다:
+
+| 비교 유형 | 설명 |
+|----------|------|
+| **기본 비교** | pixelmatch threshold 0.15 |
+| **정밀 비교** | threshold 0.05 — 미세 간격/색상 차이 검출 |
+| **컴포넌트 단위** | sidebar/header/content 영역 분리 비교 |
+| **인터랙션** | hover/active/focus 상태 캡처 + computed style diff |
+| **텍스트 마스킹** | 텍스트 transparent 처리 → 순수 레이아웃 비교 |
+| **멀티 뷰포트** | 375×812, 768×1024, 1366×900, 1920×1080 |
+| **다크 모드** | colorScheme + class 토글 비교 |
+| **스크롤 영역** | fullPage 캡처 → 뷰포트 단위 분할 비교 |
+
+### 모드 비교
+
+| 항목 | URL 모드 | 이미지 모드 |
+|------|---------|------------|
+| 입력 | 라이브 URL | PNG/JPG/WebP |
+| 추출 도구 | Playwright computed styles | AI Vision + Sharp |
+| hover/인터랙션 | 캡처 가능 | 불가 |
+| 반응형 | 멀티 뷰포트 | 단일 |
+| 싱크율 목표 | **95%+** | **85~90%** |
+
+### 의존성
+
+```bash
+npm install -D playwright pixelmatch pngjs   # URL + 이미지 공통
+npm install -D sharp                          # 이미지 모드 전용
+npx playwright install chromium
+```
+
+### designer 에이전트 연동
+
+designer 에이전트는 레퍼런스 유형에 따라 design-sync를 자동 실행한다:
+
+| 레퍼런스 | 동작 |
+|----------|------|
+| URL 제공 | `/design-sync <URL>` 전체 7단계 실행 → 싱크율 95%+ 목표 |
+| 이미지 제공 | `/design-sync --from-image <경로>` 5단계 실행 → 싱크율 85~90% 목표 |
+| 없음 | 프로젝트 유형 판단 → 디자인 토큰 자율 설계 |
+
+---
 
 ## 디렉토리 구조
 
