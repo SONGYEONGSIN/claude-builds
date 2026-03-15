@@ -27,25 +27,31 @@ argument-hint: <URL|이미지경로> [페이지경로]
 | 6 | **테이블** | `table`, `thead`, `tbody`, `tr`, `th`, `td` — 행·셀 단위 |
 | 7 | **아이콘** | `svg`, `img[src*=".svg"]`, Lucide/Heroicons 컴포넌트 — 크기, 색상, strokeWidth |
 
-**2. 15개 속성 카테고리를 빠짐없이 추출한다.**
+**2. 21개 속성 카테고리를 빠짐없이 추출한다.**
 
 | # | 카테고리 | 속성 |
 |---|---------|------|
 | 1 | 셀렉터/클래스 | `tag.className` |
-| 2 | 크기 | `width × height` |
+| 2 | 크기 | `width`, `height`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight`, `aspectRatio` |
 | 3 | 색상 | `color`, `backgroundColor`, `opacity` |
 | 4 | 서체 | `fontFamily`, `fontSize`, `fontWeight`, `fontStyle`, `lineHeight`, `letterSpacing` |
-| 5 | 텍스트 | `textAlign`, `textTransform`, `textDecoration`, `whiteSpace`, `verticalAlign`, `textOverflow`, `wordBreak`, `wordWrap` |
+| 5 | 텍스트 | `textAlign`, `textTransform`, `textDecoration`, `whiteSpace`, `verticalAlign`, `textOverflow`, `wordBreak`, `overflowWrap`, `textShadow` |
 | 6 | 패딩 | `padding` (4방향 축약) |
 | 7 | 마진 | `margin` (4방향 축약) |
-| 8 | 보더 | `border`, `borderColor`, `borderWidth`, `borderRadius`, `outline` |
-| 9 | 시각효과 | `boxShadow`, `backgroundImage` |
-| 10 | 레이아웃 | `display`, `flexDirection`, `flexWrap`, `flexGrow/Shrink/Basis`, `alignItems`, `justifyContent`, `gridTemplateColumns/Rows`, `gridColumn/Row`, `placeItems`, `order`, `gap`, `position`, `overflow`, `zIndex` |
-| 11 | 인터랙션 | `cursor`, `transition`, `transitionDuration`, `transitionTimingFunction` |
-| 12 | 접근성 | Contrast ratio, accessible name, ARIA role, keyboard-focusable |
-| 13 | CSS 변수 | `--background`, `--foreground`, `--sidebar`, `--primary` 등 custom properties |
-| 14 | 의사 요소 | `::before`, `::after` — content, 크기, 색상, 위치 |
-| 15 | 아이콘 | `width`, `height`, `color`/`stroke`, `strokeWidth`, `fill` |
+| 8 | 보더 | `border`, `borderColor`, `borderWidth`, `borderRadius`, `outline`, `outlineOffset` |
+| 9 | 시각효과 | `boxShadow`, `backgroundImage`(그라데이션), `filter`, `backdropFilter`, `mixBlendMode`, `clipPath` |
+| 10 | 레이아웃 | `display`, `flexDirection`, `flexWrap`, `flexGrow/Shrink/Basis`, `alignItems`, `justifyContent`, `gridTemplateColumns/Rows`, `gridColumn/Row`, `placeItems`, `order`, `gap`, `position`, `overflow`, `zIndex`, `isolation`, `columns` |
+| 11 | 포지셔닝 | `top`, `right`, `bottom`, `left`, `inset` |
+| 12 | 트랜스폼 | `transform`, `transformOrigin` |
+| 13 | 인터랙션 | `cursor`, `transition`, `transitionDuration`, `transitionTimingFunction`, `pointerEvents`, `userSelect`, `resize`, `scrollBehavior`, `scrollSnapType`, `scrollSnapAlign` |
+| 14 | 이미지/미디어 | `objectFit`, `objectPosition` |
+| 15 | 폼 스타일 | `appearance`, `accentColor`, `caretColor` |
+| 16 | 접근성 | Contrast ratio, accessible name, ARIA role, keyboard-focusable, `visibility` |
+| 17 | CSS 변수 | `--background`, `--foreground`, `--sidebar`, `--primary` 등 custom properties |
+| 18 | 의사 요소 | `::before`, `::after` — content, 크기, 색상, 위치 |
+| 19 | 선택 스타일 | `::selection` — color, backgroundColor |
+| 20 | 아이콘 | `width`, `height`, `color`/`stroke`, `strokeWidth`, `fill` |
+| 21 | 애니메이션 | `animationName`, `animationDuration`, `animationTimingFunction`, `animationIterationCount`, `listStyleType` |
 
 **3. 정량적 검증이 필수다.** 수정 전후 싱크율을 측정하여 개선을 숫자로 확인한다.
 
@@ -87,10 +93,14 @@ Figma Sites 등 뷰포트 스케일링이 적용된 사이트에서 정확한 CS
 | 토큰 | 추출 방법 |
 |------|----------|
 | **색상 팔레트** | 모든 고유 `color`/`bgColor` 수집 → 빈도순 정렬 → Tailwind 컬러 매칭 |
-| **타이포그래피** | `fontFamily`/`fontSize`/`fontWeight`/`lineHeight`/`letterSpacing` 조합별 사용 빈도 |
+| **타이포그래피** | `fontFamily`/`fontSize`/`fontWeight`/`fontStyle`/`lineHeight`/`letterSpacing` 조합별 사용 빈도 |
 | **간격 체계** | `padding`/`margin`/`gap` 값 분포 → 베이스 유닛(보통 4px) 감지 |
-| **보더** | `borderRadius` 패턴 (sm/md/lg/full) 정리 |
-| **그림자** | `boxShadow` 고유 값 목록 |
+| **보더** | `borderRadius` 패턴 (sm/md/lg/full), `outline` 스타일 정리 |
+| **그림자** | `boxShadow`, `textShadow` 고유 값 목록 |
+| **그라데이션** | `backgroundImage`에서 `linear-gradient`/`radial-gradient` 추출 → 빈도순 |
+| **필터/효과** | `filter`, `backdropFilter` 고유 값 목록 (blur, brightness 등) |
+| **트랜스폼** | `transform` 고유 패턴 (scale, rotate, translate) 수집 |
+| **애니메이션** | `animationName`/`animationDuration`/`animationTimingFunction` 수집, `@keyframes` 규칙 추출 |
 | **CSS 변수** | `:root`/`.dark`에 정의된 `--` custom properties 전체 수집 → 용도별 분류 |
 
 ### 1.3 토큰 출력 포맷
@@ -126,6 +136,19 @@ Figma Sites 등 뷰포트 스케일링이 적용된 사이트에서 정확한 CS
       "radius": { "sm": "6px", "md": "8px", "lg": "12px", "full": "9999px" }
     },
     "shadows": ["0 1px 2px 0 rgba(0,0,0,0.05)", "0 4px 6px -1px rgba(0,0,0,0.1)"],
+    "textShadows": ["0 1px 2px rgba(0,0,0,0.1)"],
+    "gradients": [
+      { "value": "linear-gradient(to right, #3b82f6, #8b5cf6)", "count": 3 }
+    ],
+    "filters": {
+      "filter": ["blur(4px)", "brightness(0.95)"],
+      "backdropFilter": ["blur(8px)", "blur(12px) saturate(180%)"]
+    },
+    "transforms": ["scale(1.05)", "translateY(-2px)", "rotate(45deg)"],
+    "animations": [
+      { "name": "spin", "duration": "1s", "timingFunction": "linear", "iterationCount": "infinite" },
+      { "name": "fadeIn", "duration": "300ms", "timingFunction": "ease-out" }
+    ],
     "cssVariables": {
       "light": {
         "--background": "oklch(1 0 0)",
@@ -190,6 +213,12 @@ function autoCalcCorrectionFactor(fontSizes) {
   const spacingSet = new Set();
   const radiusSet = new Set();
   const shadowSet = new Set();
+  const textShadowSet = new Set();
+  const gradientSet = new Set();
+  const filterSet = new Set();
+  const backdropFilterSet = new Set();
+  const transformSet = new Set();
+  const animationMap = new Map();
   const typoMap = new Map();
 
   for (const pg of [{ name: 'home', nav: null }, ...PAGES]) {
@@ -201,8 +230,12 @@ function autoCalcCorrectionFactor(fontSizes) {
     }
 
     const data = await page.evaluate(() => {
-      const els = document.querySelectorAll('h1,h2,h3,h4,h5,p,span,a,label,li,button,input,select,td,th,div,section');
-      const result = { fontSizes: [], colors: [], spacing: [], radius: [], shadows: [], typo: [] };
+      const els = document.querySelectorAll('h1,h2,h3,h4,h5,p,span,a,label,li,button,input,select,td,th,div,section,aside,header,main,nav,svg');
+      const result = {
+        fontSizes: [], colors: [], spacing: [], radius: [], shadows: [],
+        textShadows: [], gradients: [], filters: [], backdropFilters: [],
+        transforms: [], animations: [], typo: [],
+      };
 
       for (const el of els) {
         const s = getComputedStyle(el);
@@ -224,6 +257,19 @@ function autoCalcCorrectionFactor(fontSizes) {
 
         if (s.borderRadius !== '0px') result.radius.push(s.borderRadius);
         if (s.boxShadow !== 'none') result.shadows.push(s.boxShadow);
+        if (s.textShadow !== 'none') result.textShadows.push(s.textShadow);
+        if (s.backgroundImage !== 'none' && s.backgroundImage.includes('gradient')) {
+          result.gradients.push(s.backgroundImage);
+        }
+        if (s.filter !== 'none') result.filters.push(s.filter);
+        if (s.backdropFilter !== 'none') result.backdropFilters.push(s.backdropFilter);
+        if (s.transform !== 'none') result.transforms.push(s.transform);
+        if (s.animationName !== 'none') {
+          result.animations.push({
+            name: s.animationName, duration: s.animationDuration,
+            timingFunction: s.animationTimingFunction, iterationCount: s.animationIterationCount,
+          });
+        }
 
         const tag = el.tagName.toLowerCase();
         if (['h1','h2','h3','h4','h5','p','span','a','label'].includes(tag)) {
@@ -240,6 +286,14 @@ function autoCalcCorrectionFactor(fontSizes) {
     data.spacing.forEach(s => spacingSet.add(s));
     data.radius.forEach(r => radiusSet.add(r));
     data.shadows.forEach(s => shadowSet.add(s));
+    data.textShadows.forEach(s => textShadowSet.add(s));
+    data.gradients.forEach(g => gradientSet.add(g));
+    data.filters.forEach(f => filterSet.add(f));
+    data.backdropFilters.forEach(f => backdropFilterSet.add(f));
+    data.transforms.forEach(t => transformSet.add(t));
+    data.animations.forEach(a => {
+      if (!animationMap.has(a.name)) animationMap.set(a.name, a);
+    });
     data.typo.forEach(t => {
       const existing = typoMap.get(t.key) || { ...t, count: 0 };
       existing.count++;
@@ -318,6 +372,14 @@ function autoCalcCorrectionFactor(fontSizes) {
           .sort((a, b) => parseFloat(a) - parseFloat(b)),
       },
       shadows: [...shadowSet].slice(0, 5),
+      textShadows: [...textShadowSet].slice(0, 5),
+      gradients: [...gradientSet].slice(0, 10).map(g => ({ value: g })),
+      filters: {
+        filter: [...filterSet].slice(0, 5),
+        backdropFilter: [...backdropFilterSet].slice(0, 5),
+      },
+      transforms: [...transformSet].slice(0, 10),
+      animations: [...animationMap.values()].slice(0, 10),
       cssVariables,
     },
   };
@@ -328,6 +390,10 @@ function autoCalcCorrectionFactor(fontSizes) {
   console.log(`Typography styles: ${Object.keys(tokens.tokens.typography).length}`);
   console.log(`Spacing scale: ${tokens.tokens.spacing.scale.join(', ')}`);
   console.log(`Border radius: ${tokens.tokens.borders.radius.join(', ')}`);
+  console.log(`Gradients: ${tokens.tokens.gradients.length}`);
+  console.log(`Filters: ${tokens.tokens.filters.filter.length} filter, ${tokens.tokens.filters.backdropFilter.length} backdrop`);
+  console.log(`Transforms: ${tokens.tokens.transforms.length}`);
+  console.log(`Animations: ${tokens.tokens.animations.length}`);
   console.log('Saved: tokens.json');
 
   await browser.close();
@@ -341,7 +407,7 @@ function autoCalcCorrectionFactor(fontSizes) {
 ### 2.1 원패스 전체 추출 전략
 
 한 번의 Playwright 실행으로 모든 페이지를 순회하며 **모든 가시 요소**를 추출한다.
-7 카테고리 × 15 속성 포맷으로 영역(sidebar/header/content)과 컴포넌트 타입을 자동 분류한다.
+7 카테고리 × 21 속성 포맷으로 영역(sidebar/header/content)과 컴포넌트 타입을 자동 분류한다.
 
 ### 2.2 영역 자동 분류
 
@@ -495,25 +561,52 @@ const extractAll = (CORRECTION) => {
       area, type, tag,
       text: text.substring(0, 40),
       selector: `${tag}.${(el.className || '').toString().split(/\s+/).filter(Boolean).join('.')}`.substring(0, 120),
+      // 크기 (min/max/aspect 포함)
       dimensions: `${(rect.width * CORRECTION).toFixed(0)} × ${(rect.height * CORRECTION).toFixed(0)}`,
+      minWidth: s.minWidth !== '0px' && s.minWidth !== 'auto' ? s.minWidth : '',
+      maxWidth: s.maxWidth !== 'none' ? s.maxWidth : '',
+      minHeight: s.minHeight !== '0px' && s.minHeight !== 'auto' ? s.minHeight : '',
+      maxHeight: s.maxHeight !== 'none' ? s.maxHeight : '',
+      aspectRatio: s.aspectRatio !== 'auto' ? s.aspectRatio : '',
+      // 색상
       color: s.color,
       bgColor: s.backgroundColor,
       opacity: s.opacity !== '1' ? s.opacity : '',
+      // 서체
       fontFamily: s.fontFamily.split(',')[0].trim().replace(/['"]/g, ''),
       fontSize: `${(parseFloat(s.fontSize) * CORRECTION).toFixed(0)}px`,
       fontWeight: s.fontWeight,
       fontStyle: s.fontStyle !== 'normal' ? s.fontStyle : '',
       lineHeight: `${(parseFloat(s.lineHeight) * CORRECTION).toFixed(0)}px`,
       letterSpacing: s.letterSpacing,
+      // 텍스트
       textAlign: s.textAlign !== 'start' ? s.textAlign : '',
       textTransform: s.textTransform !== 'none' ? s.textTransform : '',
       whiteSpace: s.whiteSpace !== 'normal' ? s.whiteSpace : '',
       verticalAlign: s.verticalAlign !== 'baseline' ? s.verticalAlign : '',
+      textDecoration: s.textDecorationLine !== 'none' ? s.textDecorationLine : '',
+      textOverflow: s.textOverflow !== 'clip' ? s.textOverflow : '',
+      wordBreak: s.wordBreak !== 'normal' ? s.wordBreak : '',
+      overflowWrap: s.overflowWrap !== 'normal' ? s.overflowWrap : '',
+      textShadow: s.textShadow !== 'none' ? s.textShadow : '',
+      // 패딩/마진
       padding: shorten4(s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft),
       margin: shorten4(s.marginTop, s.marginRight, s.marginBottom, s.marginLeft),
+      // 보더
       border: s.borderWidth !== '0px' ? `${s.borderWidth} ${s.borderStyle} ${s.borderColor}` : 'none',
+      borderColor: s.borderColor,
+      borderWidth: s.borderWidth !== '0px' ? s.borderWidth : '',
       borderRadius: s.borderRadius !== '0px' ? s.borderRadius : '',
+      outline: s.outlineStyle !== 'none' ? `${s.outlineWidth} ${s.outlineStyle} ${s.outlineColor}` : '',
+      outlineOffset: s.outlineOffset !== '0px' ? s.outlineOffset : '',
+      // 시각효과
       boxShadow: s.boxShadow !== 'none' ? s.boxShadow.substring(0, 80) : '',
+      backgroundImage: s.backgroundImage !== 'none' && s.backgroundImage.includes('gradient') ? s.backgroundImage.substring(0, 120) : '',
+      filter: s.filter !== 'none' ? s.filter : '',
+      backdropFilter: s.backdropFilter !== 'none' ? s.backdropFilter : '',
+      mixBlendMode: s.mixBlendMode !== 'normal' ? s.mixBlendMode : '',
+      clipPath: s.clipPath !== 'none' ? s.clipPath : '',
+      // 레이아웃
       display: s.display,
       alignItems: s.alignItems !== 'normal' ? s.alignItems : '',
       justifyContent: s.justifyContent !== 'normal' ? s.justifyContent : '',
@@ -530,17 +623,41 @@ const extractAll = (CORRECTION) => {
       order: s.order !== '0' ? s.order : '',
       gap: s.gap !== 'normal' ? s.gap : '',
       position: s.position !== 'static' ? s.position : '',
-      cursor: s.cursor !== 'auto' ? s.cursor : '',
-      textDecoration: s.textDecorationLine !== 'none' ? s.textDecorationLine : '',
-      textOverflow: s.textOverflow !== 'clip' ? s.textOverflow : '',
-      wordBreak: s.wordBreak !== 'normal' ? s.wordBreak : '',
-      overflowWrap: s.overflowWrap !== 'normal' ? s.overflowWrap : '',
       overflow: s.overflow !== 'visible' ? s.overflow : '',
       zIndex: s.zIndex !== 'auto' ? s.zIndex : '',
-      borderColor: s.borderColor,
-      borderWidth: s.borderWidth !== '0px' ? s.borderWidth : '',
+      isolation: s.isolation !== 'auto' ? s.isolation : '',
+      columns: s.columnCount !== 'auto' ? s.columnCount : '',
+      // 포지셔닝
+      top: s.position !== 'static' && s.top !== 'auto' ? s.top : '',
+      right: s.position !== 'static' && s.right !== 'auto' ? s.right : '',
+      bottom: s.position !== 'static' && s.bottom !== 'auto' ? s.bottom : '',
+      left: s.position !== 'static' && s.left !== 'auto' ? s.left : '',
+      // 트랜스폼
+      transform: s.transform !== 'none' ? s.transform : '',
+      transformOrigin: s.transformOrigin !== '50% 50%' && s.transformOrigin !== '50% 50% 0px' ? s.transformOrigin : '',
+      // 인터랙션
+      cursor: s.cursor !== 'auto' ? s.cursor : '',
       transition: s.transitionProperty !== 'all' && s.transitionProperty !== 'none'
         ? `${s.transitionProperty} ${s.transitionDuration} ${s.transitionTimingFunction}` : '',
+      pointerEvents: s.pointerEvents !== 'auto' ? s.pointerEvents : '',
+      userSelect: s.userSelect !== 'auto' ? s.userSelect : '',
+      resize: s.resize !== 'none' ? s.resize : '',
+      scrollBehavior: s.scrollBehavior !== 'auto' ? s.scrollBehavior : '',
+      scrollSnapType: s.scrollSnapType !== 'none' ? s.scrollSnapType : '',
+      scrollSnapAlign: s.scrollSnapAlign !== 'none' ? s.scrollSnapAlign : '',
+      // 이미지/미디어
+      objectFit: s.objectFit !== 'fill' ? s.objectFit : '',
+      objectPosition: s.objectPosition !== '50% 50%' ? s.objectPosition : '',
+      // 폼 스타일
+      appearance: s.appearance !== 'none' && s.appearance !== 'auto' ? s.appearance : '',
+      accentColor: s.accentColor !== 'auto' ? s.accentColor : '',
+      caretColor: s.caretColor !== 'auto' && s.caretColor !== s.color ? s.caretColor : '',
+      // 애니메이션
+      animationName: s.animationName !== 'none' ? s.animationName : '',
+      animationDuration: s.animationDuration !== '0s' ? s.animationDuration : '',
+      // 기타
+      visibility: s.visibility !== 'visible' ? s.visibility : '',
+      listStyleType: s.listStyleType !== 'none' && s.listStyleType !== 'disc' ? s.listStyleType : '',
       // 아이콘 속성
       ...(tag === 'svg' ? {
         svgWidth: el.getAttribute('width') || s.width,
@@ -553,8 +670,7 @@ const extractAll = (CORRECTION) => {
       ...(['input','textarea'].includes(tag) ? (() => {
         const ph = el.getAttribute('placeholder');
         if (!ph) return {};
-        // placeholder 색상은 ::placeholder 의사 요소에서 가져옴
-        return { placeholder: ph, placeholderColor: '' }; // computed에서 직접 접근 불가, 별도 처리
+        return { placeholder: ph, placeholderColor: '' };
       })() : {}),
       // ::before/::after 의사 요소
       ...(() => {
@@ -574,6 +690,17 @@ const extractAll = (CORRECTION) => {
         }
         return Object.keys(pseudo).length > 0 ? { pseudoElements: pseudo } : {};
       })(),
+      // ::selection 스타일
+      ...(() => {
+        try {
+          const sel = getComputedStyle(el, '::selection');
+          if (sel.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+            return { selectionBg: sel.backgroundColor, selectionColor: sel.color };
+          }
+        } catch {}
+        return {};
+      })(),
+      // 접근성
       contrast: cr,
       contrastPass: cr ? parseFloat(cr) >= 4.5 : null,
       name: accessibleName(el),
@@ -1246,6 +1373,105 @@ const TAILWIND_MAP = {
       10:'10', 12:'12', 16:'16', 20:'20', 24:'24' };
     return map[rem] || `[${px}]`;
   },
+  // --- 새 속성 매핑 ---
+  aspectRatio: {
+    'auto': 'aspect-auto', '1 / 1': 'aspect-square',
+    '16 / 9': 'aspect-video', '4 / 3': 'aspect-[4/3]',
+  },
+  objectFit: {
+    'contain': 'object-contain', 'cover': 'object-cover',
+    'fill': 'object-fill', 'none': 'object-none', 'scale-down': 'object-scale-down',
+  },
+  objectPosition: {
+    '50% 50%': 'object-center', '50% 0%': 'object-top', '50% 100%': 'object-bottom',
+    '0% 50%': 'object-left', '100% 50%': 'object-right',
+  },
+  mixBlendMode: {
+    'multiply': 'mix-blend-multiply', 'screen': 'mix-blend-screen',
+    'overlay': 'mix-blend-overlay', 'darken': 'mix-blend-darken',
+    'lighten': 'mix-blend-lighten', 'color-dodge': 'mix-blend-color-dodge',
+    'difference': 'mix-blend-difference', 'exclusion': 'mix-blend-exclusion',
+  },
+  isolation: { 'isolate': 'isolate', 'auto': 'isolation-auto' },
+  visibility: { 'visible': 'visible', 'hidden': 'invisible', 'collapse': 'collapse' },
+  pointerEvents: { 'none': 'pointer-events-none', 'auto': 'pointer-events-auto' },
+  userSelect: {
+    'none': 'select-none', 'text': 'select-text', 'all': 'select-all', 'auto': 'select-auto',
+  },
+  resize: {
+    'both': 'resize', 'horizontal': 'resize-x', 'vertical': 'resize-y', 'none': 'resize-none',
+  },
+  scrollBehavior: { 'smooth': 'scroll-smooth', 'auto': 'scroll-auto' },
+  scrollSnapType: {
+    'x mandatory': 'snap-x snap-mandatory', 'y mandatory': 'snap-y snap-mandatory',
+    'x proximity': 'snap-x', 'y proximity': 'snap-y',
+    'both mandatory': 'snap-both snap-mandatory',
+  },
+  scrollSnapAlign: {
+    'start': 'snap-start', 'end': 'snap-end', 'center': 'snap-center',
+  },
+  appearance: { 'none': 'appearance-none', 'auto': 'appearance-auto' },
+  listStyleType: {
+    'disc': 'list-disc', 'decimal': 'list-decimal', 'none': 'list-none',
+  },
+  columns: {
+    '1': 'columns-1', '2': 'columns-2', '3': 'columns-3', '4': 'columns-4',
+  },
+  backdropFilter: (value) => {
+    if (value.includes('blur')) {
+      const m = value.match(/blur\((\d+)px\)/);
+      if (m) {
+        const blurMap = { 4:'backdrop-blur-sm', 8:'backdrop-blur', 12:'backdrop-blur-md',
+          16:'backdrop-blur-lg', 24:'backdrop-blur-xl', 40:'backdrop-blur-2xl', 64:'backdrop-blur-3xl' };
+        return blurMap[m[1]] || `backdrop-blur-[${m[1]}px]`;
+      }
+    }
+    return null;
+  },
+  filter: (value) => {
+    const parts = [];
+    const blurM = value.match(/blur\((\d+)px\)/);
+    if (blurM) {
+      const bMap = { 0:'blur-none', 4:'blur-sm', 8:'blur', 12:'blur-md', 16:'blur-lg', 24:'blur-xl', 40:'blur-2xl', 64:'blur-3xl' };
+      parts.push(bMap[blurM[1]] || `blur-[${blurM[1]}px]`);
+    }
+    if (value.includes('grayscale(1)')) parts.push('grayscale');
+    if (value.includes('invert(1)')) parts.push('invert');
+    if (value.includes('sepia(1)')) parts.push('sepia');
+    const brightM = value.match(/brightness\(([\d.]+)\)/);
+    if (brightM) {
+      const v = Math.round(parseFloat(brightM[1]) * 100);
+      parts.push(`brightness-${v}`);
+    }
+    const contrastM = value.match(/contrast\(([\d.]+)\)/);
+    if (contrastM) {
+      const v = Math.round(parseFloat(contrastM[1]) * 100);
+      parts.push(`contrast-${v}`);
+    }
+    const saturateM = value.match(/saturate\(([\d.]+)\)/);
+    if (saturateM) {
+      const v = Math.round(parseFloat(saturateM[1]) * 100);
+      parts.push(`saturate-${v}`);
+    }
+    return parts.length > 0 ? parts.join(' ') : null;
+  },
+  transformOrigin: {
+    'center': 'origin-center', 'top': 'origin-top', 'top right': 'origin-top-right',
+    'right': 'origin-right', 'bottom right': 'origin-bottom-right', 'bottom': 'origin-bottom',
+    'bottom left': 'origin-bottom-left', 'left': 'origin-left', 'top left': 'origin-top-left',
+  },
+  maxWidth: (value) => {
+    const map = { '0px':'max-w-0', '320px':'max-w-xs', '384px':'max-w-sm', '448px':'max-w-md',
+      '512px':'max-w-lg', '576px':'max-w-xl', '672px':'max-w-2xl', '768px':'max-w-3xl',
+      '896px':'max-w-4xl', '1024px':'max-w-5xl', '1152px':'max-w-6xl', '1280px':'max-w-7xl',
+      'none':'max-w-none', '100%':'max-w-full' };
+    return map[value] || `max-w-[${value}]`;
+  },
+  minHeight: (value) => {
+    const map = { '0px':'min-h-0', '100%':'min-h-full', '100vh':'min-h-screen',
+      '100dvh':'min-h-dvh', '100svh':'min-h-svh' };
+    return map[value] || `min-h-[${value}]`;
+  },
 };
 ```
 
@@ -1902,6 +2128,200 @@ function suggestChange(refValue, property) {
                       current: currentGap, suggestion: `${currentGap} → ${twGap}`,
                     });
                   }
+                }
+              }
+
+              // === 새 속성 비교 ===
+
+              // aspectRatio 비교
+              if (refEl.aspectRatio) {
+                const twAR = TAILWIND_MAP.aspectRatio[refEl.aspectRatio];
+                if (twAR && !fc.classes.includes(twAR)) {
+                  diffs.push({ line: fc.line, property: 'aspectRatio', reference: `${refEl.aspectRatio} (${twAR})`, current: '', suggestion: `→ ${twAR}` });
+                }
+              }
+
+              // objectFit 비교
+              if (refEl.objectFit) {
+                const twOF = TAILWIND_MAP.objectFit[refEl.objectFit];
+                if (twOF && !fc.classes.includes(twOF)) {
+                  diffs.push({ line: fc.line, property: 'objectFit', reference: `${refEl.objectFit} (${twOF})`, current: '', suggestion: `→ ${twOF}` });
+                }
+              }
+
+              // objectPosition 비교
+              if (refEl.objectPosition) {
+                const twOP = TAILWIND_MAP.objectPosition[refEl.objectPosition];
+                if (twOP && !fc.classes.includes(twOP)) {
+                  diffs.push({ line: fc.line, property: 'objectPosition', reference: `${refEl.objectPosition} (${twOP})`, current: '', suggestion: `→ ${twOP}` });
+                }
+              }
+
+              // mixBlendMode 비교
+              if (refEl.mixBlendMode) {
+                const twMBM = TAILWIND_MAP.mixBlendMode[refEl.mixBlendMode];
+                if (twMBM && !fc.classes.includes(twMBM)) {
+                  diffs.push({ line: fc.line, property: 'mixBlendMode', reference: `${refEl.mixBlendMode} (${twMBM})`, current: '', suggestion: `→ ${twMBM}` });
+                }
+              }
+
+              // visibility 비교
+              if (refEl.visibility) {
+                const twVis = TAILWIND_MAP.visibility[refEl.visibility];
+                if (twVis && !fc.classes.includes(twVis)) {
+                  diffs.push({ line: fc.line, property: 'visibility', reference: `${refEl.visibility} (${twVis})`, current: '', suggestion: `→ ${twVis}` });
+                }
+              }
+
+              // pointerEvents 비교
+              if (refEl.pointerEvents) {
+                const twPE = TAILWIND_MAP.pointerEvents[refEl.pointerEvents];
+                if (twPE && !fc.classes.includes(twPE)) {
+                  diffs.push({ line: fc.line, property: 'pointerEvents', reference: `${refEl.pointerEvents} (${twPE})`, current: '', suggestion: `→ ${twPE}` });
+                }
+              }
+
+              // userSelect 비교
+              if (refEl.userSelect) {
+                const twUS = TAILWIND_MAP.userSelect[refEl.userSelect];
+                if (twUS && !fc.classes.includes(twUS)) {
+                  diffs.push({ line: fc.line, property: 'userSelect', reference: `${refEl.userSelect} (${twUS})`, current: '', suggestion: `→ ${twUS}` });
+                }
+              }
+
+              // resize 비교
+              if (refEl.resize) {
+                const twRS = TAILWIND_MAP.resize[refEl.resize];
+                if (twRS && !fc.classes.includes(twRS)) {
+                  diffs.push({ line: fc.line, property: 'resize', reference: `${refEl.resize} (${twRS})`, current: '', suggestion: `→ ${twRS}` });
+                }
+              }
+
+              // scrollBehavior 비교
+              if (refEl.scrollBehavior) {
+                const twSB = TAILWIND_MAP.scrollBehavior[refEl.scrollBehavior];
+                if (twSB && !fc.classes.includes(twSB)) {
+                  diffs.push({ line: fc.line, property: 'scrollBehavior', reference: `${refEl.scrollBehavior} (${twSB})`, current: '', suggestion: `→ ${twSB}` });
+                }
+              }
+
+              // scrollSnapType 비교
+              if (refEl.scrollSnapType) {
+                const twSST = TAILWIND_MAP.scrollSnapType[refEl.scrollSnapType];
+                if (twSST && !fc.classes.includes(twSST.split(' ')[0])) {
+                  diffs.push({ line: fc.line, property: 'scrollSnapType', reference: `${refEl.scrollSnapType} (${twSST})`, current: '', suggestion: `→ ${twSST}` });
+                }
+              }
+
+              // scrollSnapAlign 비교
+              if (refEl.scrollSnapAlign) {
+                const twSSA = TAILWIND_MAP.scrollSnapAlign[refEl.scrollSnapAlign];
+                if (twSSA && !fc.classes.includes(twSSA)) {
+                  diffs.push({ line: fc.line, property: 'scrollSnapAlign', reference: `${refEl.scrollSnapAlign} (${twSSA})`, current: '', suggestion: `→ ${twSSA}` });
+                }
+              }
+
+              // appearance 비교
+              if (refEl.appearance) {
+                const twApp = TAILWIND_MAP.appearance[refEl.appearance];
+                if (twApp && !fc.classes.includes(twApp)) {
+                  diffs.push({ line: fc.line, property: 'appearance', reference: `${refEl.appearance} (${twApp})`, current: '', suggestion: `→ ${twApp}` });
+                }
+              }
+
+              // listStyleType 비교
+              if (refEl.listStyleType) {
+                const twLS = TAILWIND_MAP.listStyleType[refEl.listStyleType];
+                if (twLS && !fc.classes.includes(twLS)) {
+                  diffs.push({ line: fc.line, property: 'listStyleType', reference: `${refEl.listStyleType} (${twLS})`, current: '', suggestion: `→ ${twLS}` });
+                }
+              }
+
+              // isolation 비교
+              if (refEl.isolation) {
+                const twIso = TAILWIND_MAP.isolation[refEl.isolation];
+                if (twIso && !fc.classes.includes(twIso)) {
+                  diffs.push({ line: fc.line, property: 'isolation', reference: `${refEl.isolation} (${twIso})`, current: '', suggestion: `→ ${twIso}` });
+                }
+              }
+
+              // columns 비교
+              if (refEl.columns) {
+                const twCol = TAILWIND_MAP.columns[refEl.columns];
+                if (twCol && !fc.classes.includes(twCol)) {
+                  diffs.push({ line: fc.line, property: 'columns', reference: `${refEl.columns} (${twCol})`, current: '', suggestion: `→ ${twCol}` });
+                }
+              }
+
+              // filter 비교
+              if (refEl.filter) {
+                const twFilter = typeof TAILWIND_MAP.filter === 'function' ? TAILWIND_MAP.filter(refEl.filter) : null;
+                if (twFilter) {
+                  diffs.push({ line: fc.line, property: 'filter', reference: `${refEl.filter} (${twFilter})`, current: '', suggestion: `→ ${twFilter}` });
+                }
+              }
+
+              // backdropFilter 비교
+              if (refEl.backdropFilter) {
+                const twBDF = typeof TAILWIND_MAP.backdropFilter === 'function' ? TAILWIND_MAP.backdropFilter(refEl.backdropFilter) : null;
+                if (twBDF) {
+                  diffs.push({ line: fc.line, property: 'backdropFilter', reference: `${refEl.backdropFilter} (${twBDF})`, current: '', suggestion: `→ ${twBDF}` });
+                }
+              }
+
+              // maxWidth 비교
+              if (refEl.maxWidth && refEl.maxWidth !== 'none') {
+                const twMW = typeof TAILWIND_MAP.maxWidth === 'function' ? TAILWIND_MAP.maxWidth(refEl.maxWidth) : null;
+                if (twMW && !fc.classes.includes(twMW)) {
+                  const currentMW = fc.classes.match(/max-w-(\w+|\[[\w%]+\])/)?.[0];
+                  if (currentMW && currentMW !== twMW) {
+                    diffs.push({ line: fc.line, property: 'maxWidth', reference: `${refEl.maxWidth} (${twMW})`, current: currentMW, suggestion: `${currentMW} → ${twMW}` });
+                  }
+                }
+              }
+
+              // transformOrigin 비교
+              if (refEl.transformOrigin) {
+                const twTO = TAILWIND_MAP.transformOrigin[refEl.transformOrigin];
+                if (twTO && !fc.classes.includes(twTO)) {
+                  diffs.push({ line: fc.line, property: 'transformOrigin', reference: `${refEl.transformOrigin} (${twTO})`, current: '', suggestion: `→ ${twTO}` });
+                }
+              }
+
+              // outline 비교
+              if (refEl.outline) {
+                // outline ring 패턴 검출
+                if (refEl.outline.includes('2px') && !fc.classes.includes('ring-2') && !fc.classes.includes('outline')) {
+                  diffs.push({ line: fc.line, property: 'outline', reference: refEl.outline, current: '', suggestion: '→ ring-2 또는 outline' });
+                }
+              }
+
+              // textShadow 비교
+              if (refEl.textShadow) {
+                if (!fc.classes.includes('drop-shadow')) {
+                  diffs.push({ line: fc.line, property: 'textShadow', reference: refEl.textShadow, current: '', suggestion: '→ drop-shadow-* (커스텀)' });
+                }
+              }
+
+              // backgroundImage (gradient) 비교
+              if (refEl.backgroundImage) {
+                const hasGradient = fc.classes.match(/bg-gradient/);
+                if (!hasGradient) {
+                  diffs.push({ line: fc.line, property: 'backgroundImage', reference: refEl.backgroundImage.substring(0, 60), current: '', suggestion: '→ bg-gradient-to-* (커스텀)' });
+                }
+              }
+
+              // accentColor 비교
+              if (refEl.accentColor) {
+                if (!fc.classes.match(/accent-/)) {
+                  diffs.push({ line: fc.line, property: 'accentColor', reference: refEl.accentColor, current: '', suggestion: '→ accent-* (커스텀)' });
+                }
+              }
+
+              // caretColor 비교
+              if (refEl.caretColor) {
+                if (!fc.classes.match(/caret-/)) {
+                  diffs.push({ line: fc.line, property: 'caretColor', reference: refEl.caretColor, current: '', suggestion: '→ caret-* (커스텀)' });
                 }
               }
             }
@@ -2736,7 +3156,7 @@ npm install -D pngjs         # PNG 처리
 - 스크린샷/diff 이미지도 완료 후 삭제
 - `tokens.json`, `inventory.json`, `mapping.json`은 작업 중 프로젝트 루트에 생성 → 완료 후 삭제 (학습 저장 시 `learned/`로 복사)
 - 수정 후 반드시 `npx tsc --noEmit && npm test` 검증
-- **7 카테고리 × 15 속성** 모두 동일 깊이로 추출·비교
+- **7 카테고리 × 21 속성** 모두 동일 깊이로 추출·비교
 - 시각적 회귀 테스트는 **수정 전후** 두 번 실행하여 개선을 정량화
 - 로컬 개발 서버(`localhost:3000`)가 실행 중이어야 시각적 회귀 테스트 가능
 
@@ -3003,3 +3423,181 @@ npm install -D pngjs         # PNG 처리
 | oklch(0.269 0 0) | gray-800 |
 | oklch(0.205 0 0) | gray-900 |
 | oklch(0.145 0 0) | gray-950 |
+
+### 비율 (aspectRatio)
+| CSS | Tailwind |
+|-----|----------|
+| auto | aspect-auto |
+| 1 / 1 | aspect-square |
+| 16 / 9 | aspect-video |
+| 4 / 3 | aspect-[4/3] |
+
+### 이미지 맞춤 (objectFit)
+| CSS | Tailwind |
+|-----|----------|
+| contain | object-contain |
+| cover | object-cover |
+| fill | object-fill |
+| none | object-none |
+| scale-down | object-scale-down |
+
+### 이미지 위치 (objectPosition)
+| CSS | Tailwind |
+|-----|----------|
+| 50% 50% (center) | object-center |
+| 50% 0% (top) | object-top |
+| 50% 100% (bottom) | object-bottom |
+| 0% 50% (left) | object-left |
+| 100% 50% (right) | object-right |
+
+### 최대 너비 (maxWidth)
+| CSS | Tailwind |
+|-----|----------|
+| 320px | max-w-xs |
+| 384px | max-w-sm |
+| 448px | max-w-md |
+| 512px | max-w-lg |
+| 576px | max-w-xl |
+| 672px | max-w-2xl |
+| 768px | max-w-3xl |
+| 896px | max-w-4xl |
+| 1024px | max-w-5xl |
+| 1152px | max-w-6xl |
+| 1280px | max-w-7xl |
+| 100% | max-w-full |
+| none | max-w-none |
+
+### 최소 높이 (minHeight)
+| CSS | Tailwind |
+|-----|----------|
+| 0px | min-h-0 |
+| 100% | min-h-full |
+| 100vh | min-h-screen |
+| 100dvh | min-h-dvh |
+
+### 블렌드 모드 (mixBlendMode)
+| CSS | Tailwind |
+|-----|----------|
+| multiply | mix-blend-multiply |
+| screen | mix-blend-screen |
+| overlay | mix-blend-overlay |
+| darken | mix-blend-darken |
+| lighten | mix-blend-lighten |
+| color-dodge | mix-blend-color-dodge |
+| difference | mix-blend-difference |
+
+### 필터 (filter)
+| CSS | Tailwind |
+|-----|----------|
+| blur(0px) | blur-none |
+| blur(4px) | blur-sm |
+| blur(8px) | blur |
+| blur(12px) | blur-md |
+| blur(16px) | blur-lg |
+| blur(24px) | blur-xl |
+| grayscale(1) | grayscale |
+| invert(1) | invert |
+| sepia(1) | sepia |
+| brightness(0.5) | brightness-50 |
+| brightness(0.75) | brightness-75 |
+| brightness(1.5) | brightness-150 |
+| contrast(0.5) | contrast-50 |
+| contrast(1.5) | contrast-150 |
+| saturate(0.5) | saturate-50 |
+| saturate(1.5) | saturate-150 |
+
+### 배경 필터 (backdropFilter)
+| CSS | Tailwind |
+|-----|----------|
+| blur(4px) | backdrop-blur-sm |
+| blur(8px) | backdrop-blur |
+| blur(12px) | backdrop-blur-md |
+| blur(16px) | backdrop-blur-lg |
+| blur(24px) | backdrop-blur-xl |
+| blur(40px) | backdrop-blur-2xl |
+| blur(64px) | backdrop-blur-3xl |
+
+### 트랜스폼 원점 (transformOrigin)
+| CSS | Tailwind |
+|-----|----------|
+| center | origin-center |
+| top | origin-top |
+| top right | origin-top-right |
+| right | origin-right |
+| bottom right | origin-bottom-right |
+| bottom | origin-bottom |
+| bottom left | origin-bottom-left |
+| left | origin-left |
+| top left | origin-top-left |
+
+### 가시성 (visibility)
+| CSS | Tailwind |
+|-----|----------|
+| visible | visible |
+| hidden | invisible |
+| collapse | collapse |
+
+### 포인터 이벤트 (pointerEvents)
+| CSS | Tailwind |
+|-----|----------|
+| none | pointer-events-none |
+| auto | pointer-events-auto |
+
+### 텍스트 선택 (userSelect)
+| CSS | Tailwind |
+|-----|----------|
+| none | select-none |
+| text | select-text |
+| all | select-all |
+| auto | select-auto |
+
+### 리사이즈 (resize)
+| CSS | Tailwind |
+|-----|----------|
+| both | resize |
+| horizontal | resize-x |
+| vertical | resize-y |
+| none | resize-none |
+
+### 스크롤 동작 (scrollBehavior)
+| CSS | Tailwind |
+|-----|----------|
+| smooth | scroll-smooth |
+| auto | scroll-auto |
+
+### 스크롤 스냅
+| CSS | Tailwind |
+|-----|----------|
+| scroll-snap-type: x mandatory | snap-x snap-mandatory |
+| scroll-snap-type: y mandatory | snap-y snap-mandatory |
+| scroll-snap-type: both mandatory | snap-both snap-mandatory |
+| scroll-snap-align: start | snap-start |
+| scroll-snap-align: end | snap-end |
+| scroll-snap-align: center | snap-center |
+
+### 외형 (appearance)
+| CSS | Tailwind |
+|-----|----------|
+| none | appearance-none |
+| auto | appearance-auto |
+
+### 리스트 스타일 (listStyleType)
+| CSS | Tailwind |
+|-----|----------|
+| disc | list-disc |
+| decimal | list-decimal |
+| none | list-none |
+
+### 컬럼 (columns)
+| CSS | Tailwind |
+|-----|----------|
+| 1 | columns-1 |
+| 2 | columns-2 |
+| 3 | columns-3 |
+| 4 | columns-4 |
+
+### 격리 (isolation)
+| CSS | Tailwind |
+|-----|----------|
+| isolate | isolate |
+| auto | isolation-auto |

@@ -280,25 +280,31 @@ Step I-5 → 최종 검증 + 정리       URL 모드 Phase 6~7과 동일
 | 6 | 테이블 | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
 | 7 | 아이콘 | `svg`, `img[src*=".svg"]` — 크기, 색상, strokeWidth |
 
-**15개 속성 카테고리:**
+**21개 속성 카테고리:**
 
 | # | 카테고리 | 주요 속성 |
 |---|---------|----------|
 | 1 | 셀렉터 | `tag.className` |
-| 2 | 크기 | `width`, `height` |
+| 2 | 크기 | `width`, `height`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight`, `aspectRatio` |
 | 3 | 색상 | `color`, `backgroundColor`, `opacity` |
 | 4 | 서체 | `fontFamily`, `fontSize`, `fontWeight`, `fontStyle`, `lineHeight`, `letterSpacing` |
-| 5 | 텍스트 | `textAlign`, `textTransform`, `textDecoration`, `whiteSpace`, `textOverflow`, `wordBreak` |
+| 5 | 텍스트 | `textAlign`, `textTransform`, `textDecoration`, `whiteSpace`, `textOverflow`, `wordBreak`, `textShadow` |
 | 6 | 패딩 | 4방향 축약 |
 | 7 | 마진 | 4방향 축약 |
-| 8 | 보더 | `border`, `borderColor`, `borderWidth`, `borderRadius` |
-| 9 | 시각효과 | `boxShadow`, `backgroundImage` |
-| 10 | 레이아웃 | `display`, `flex*`, `grid*`, `gap`, `position`, `overflow`, `zIndex` |
-| 11 | 인터랙션 | `cursor`, `transition`, `transitionDuration`, `transitionTimingFunction` |
-| 12 | 접근성 | Contrast ratio, accessible name, ARIA role |
-| 13 | CSS 변수 | `--background`, `--foreground`, `--primary` 등 |
-| 14 | 의사 요소 | `::before`, `::after` — content, 크기, 색상 |
-| 15 | 아이콘 | SVG `width`, `height`, `stroke`, `fill` |
+| 8 | 보더 | `border`, `borderColor`, `borderWidth`, `borderRadius`, `outline`, `outlineOffset` |
+| 9 | 시각효과 | `boxShadow`, `backgroundImage`(그라데이션), `filter`, `backdropFilter`, `mixBlendMode`, `clipPath` |
+| 10 | 레이아웃 | `display`, `flex*`, `grid*`, `gap`, `position`, `overflow`, `zIndex`, `isolation`, `columns` |
+| 11 | 포지셔닝 | `top`, `right`, `bottom`, `left`, `inset` |
+| 12 | 트랜스폼 | `transform`, `transformOrigin` |
+| 13 | 인터랙션 | `cursor`, `transition*`, `pointerEvents`, `userSelect`, `resize`, `scrollBehavior`, `scrollSnap*` |
+| 14 | 이미지/미디어 | `objectFit`, `objectPosition` |
+| 15 | 폼 스타일 | `appearance`, `accentColor`, `caretColor` |
+| 16 | 접근성 | Contrast ratio, accessible name, ARIA role, `visibility` |
+| 17 | CSS 변수 | `--background`, `--foreground`, `--primary` 등 |
+| 18 | 의사 요소 | `::before`, `::after` — content, 크기, 색상 |
+| 19 | 선택 스타일 | `::selection` — color, backgroundColor |
+| 20 | 아이콘 | SVG `width`, `height`, `stroke`, `fill` |
+| 21 | 애니메이션 | `animationName`, `animationDuration`, `listStyleType` |
 
 ### 비주얼 비교 기능
 
