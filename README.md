@@ -268,17 +268,18 @@ Step I-5 → 최종 검증 + 정리       URL 모드 Phase 6~7과 동일
 
 ### 추출 범위
 
-**7개 요소 카테고리:**
+**8개 요소 카테고리:**
 
 | # | 카테고리 | 대상 요소 |
 |---|---------|----------|
 | 1 | 레이아웃 | `aside`, `header`, `main`, `nav`, 사이드바 |
-| 2 | 헤딩 | `h1`~`h5` — 페이지/카드/섹션 제목 |
+| 2 | 헤딩 | `h1`~`h6` — 페이지/카드/섹션 제목 |
 | 3 | 텍스트 | `p`, `span`, `label`, `li`, `a` — 설명, 배지, 링크 |
 | 4 | 카드/컨테이너 | `div`(border/bg/rounded), `section` |
 | 5 | 폼 | `input`, `select`, `button`, `textarea` |
-| 6 | 테이블 | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
-| 7 | 아이콘 | `svg`, `img[src*=".svg"]` — 크기, 색상, strokeWidth |
+| 6 | 검색/필터/드롭다운 | 검색 컨테이너(relative wrapper + 아이콘), 필터 바/칩, 커스텀 드롭다운 패널/아이템 |
+| 7 | 테이블 | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
+| 8 | 아이콘 | `svg`, `img[src*=".svg"]` — 크기, 색상, strokeWidth |
 
 **21개 속성 카테고리:**
 
