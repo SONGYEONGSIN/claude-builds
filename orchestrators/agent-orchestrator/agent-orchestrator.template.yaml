@@ -1,0 +1,72 @@
+# Agent Orchestrator 설정 템플릿
+#
+# 사용법:
+#   1. 프로젝트 루트에 agent-orchestrator.yaml 로 복사
+#   2. {{PLACEHOLDER}} 값을 프로젝트에 맞게 수정
+#   3. ao start 로 실행
+#
+# 참고: https://github.com/ComposioHQ/agent-orchestrator
+
+port: 3001
+
+# --- 기본 플러그인 ---
+defaults:
+  runtime: tmux              # tmux | docker | process
+  agent: claude-code         # claude-code | codex | aider
+  workspace: worktree        # worktree (독립 브랜치) | clone
+  notifiers: [desktop]       # desktop | slack | webhook
+
+# --- 프로젝트 ---
+projects:
+  {{PROJECT_NAME}}:
+    repo: {{GITHUB_OWNER}}/{{PROJECT_NAME}}
+    path: ~/{{PROJECT_PATH}}
+    defaultBranch: main
+    sessionPrefix: {{PROJECT_PREFIX}}
+
+# --- 리액션 (CI/CD 자동화) ---
+reactions:
+  # CI 실패 시 에이전트가 자동 수정 시도
+  ci-failed:
+    auto: true
+    action: send-to-agent
+    retries: 2
+
+  # 리뷰어가 변경 요청 시 에이전트가 자동 대응
+  changes-requested:
+    auto: true
+    action: send-to-agent
+    escalateAfter: 30m
+
+  # PR 승인 + CI 통과 시 알림 (자동 머지는 기본 OFF)
+  approved-and-green:
+    auto: false
+    action: notify
+
+# --- 운영 워크플로우 ---
+#
+# claude-builds의 6개 에이전트를 단계별로 활용:
+#
+# 1. 기획 (planner)
+#    ao spawn {{PROJECT_NAME}} ISSUE-123
+#    ao send <session> "이슈를 분석하고 구현 계획을 세워라. .claude/agents/planner.md 지침을 따르라."
+#
+# 2. 설계 (designer)
+#    ao spawn {{PROJECT_NAME}} ISSUE-123
+#    ao send <session> "UI/UX를 설계하라. .claude/agents/designer.md 지침을 따르라."
+#
+# 3. 구현 (developer)
+#    ao spawn {{PROJECT_NAME}} ISSUE-123
+#    ao send <session> "계획에 따라 코드를 구현하라. .claude/agents/developer.md 지침을 따르라."
+#
+# 4. 리뷰 (feedback)
+#    ao spawn {{PROJECT_NAME}} PR-456
+#    ao send <session> "PR을 리뷰하라. .claude/agents/feedback.md 지침을 따르라."
+#
+# 5. QA (qa)
+#    ao spawn {{PROJECT_NAME}} ISSUE-123
+#    ao send <session> "테스트를 작성하라. .claude/agents/qa.md 지침을 따르라."
+#
+# 6. 보안 (security)
+#    ao spawn {{PROJECT_NAME}} ISSUE-123
+#    ao send <session> "보안을 점검하라. .claude/agents/security.md 지침을 따르라."

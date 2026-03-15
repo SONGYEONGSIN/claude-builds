@@ -1,0 +1,29 @@
+{
+  "default_program": "claude",
+  "profiles": [
+    {
+      "name": "planner",
+      "program": "claude --allowedTools 'Read,Grep,Glob,Agent' --prompt '작업을 분석하고 구현 계획을 세워라. .claude/agents/planner.md 지침을 따르라.'"
+    },
+    {
+      "name": "designer",
+      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt 'UI/UX를 설계하고 Tailwind CSS 스타일링을 제안하라. .claude/agents/designer.md 지침을 따르라.'"
+    },
+    {
+      "name": "developer",
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash,Edit,Write' --prompt '코드를 구현하라. .claude/agents/developer.md 지침을 따르라.'"
+    },
+    {
+      "name": "feedback",
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash' --prompt '코드 품질을 분석하고 개선안을 제시하라. .claude/agents/feedback.md 지침을 따르라.'"
+    },
+    {
+      "name": "qa",
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash,Edit,Write' --prompt '테스트를 작성하고 실행하라. .claude/agents/qa.md 지침을 따르라.'"
+    },
+    {
+      "name": "security",
+      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt 'OWASP Top 10 기준으로 보안 스캔하라. .claude/agents/security.md 지침을 따르라.'"
+    }
+  ]
+}

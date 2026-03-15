@@ -12,6 +12,9 @@ git clone https://github.com/YOUR_USERNAME/claude-builds.git
 cd /your/project
 bash /path/to/claude-builds/setup.sh
 
+# 2-1. 오케스트레이터 포함 설치 (선택)
+bash /path/to/claude-builds/setup.sh --with-orchestrators
+
 # 3. 프로젝트별 설정
 # .claude/settings.local.json → env 섹션에 환경변수 추가
 # CLAUDE.md → 플레이스홀더 채우기
@@ -20,6 +23,24 @@ bash /path/to/claude-builds/setup.sh
 ## 아키텍처
 
 ```
+┌─────────────────────────────────────────────────────────────────────┐
+│                   Orchestration Layer (선택)                         │
+│                                                                     │
+│  ┌──────────────────────────────┐ ┌──────────────────────────────┐  │
+│  │   Claude Squad (로컬 병렬)    │ │ Agent Orchestrator (CI/CD)   │  │
+│  │                               │ │                              │  │
+│  │  tmux 세션 × N                │ │ GitHub 이슈 → 에이전트 할당  │  │
+│  │  각 세션 = git worktree       │ │ CI 실패 → 자동 수정          │  │
+│  │  프로필로 에이전트 선택        │ │ 리뷰 코멘트 → 자동 대응      │  │
+│  │  cs → TUI 실행                │ │ ao spawn → 에이전트 생성     │  │
+│  └──────────────────────────────┘ └──────────────────────────────┘  │
+│              │                              │                        │
+│              └──────────┬───────────────────┘                        │
+│                         ▼                                            │
+│              각 세션이 .claude/ 설정 상속                              │
+└─────────────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        Claude Code CLI                              │
 │                                                                     │
@@ -194,13 +215,19 @@ bash /path/to/claude-builds/setup.sh
 ```
 claude-builds/
 ├── README.md
-├── setup.sh                       # 원클릭 설치 스크립트
+├── setup.sh                       # 원클릭 설치 스크립트 (--with-orchestrators)
 ├── settings/
 │   └── settings.template.json     # 권한, 훅, env 템플릿
 ├── agents/                        # 6개 전문 에이전트
 ├── hooks/                         # 7개 자동화 훅
 ├── skills/                        # 9개 CLI 스킬
 ├── rules/                         # 3개 공통 규칙
+├── orchestrators/                 # 오케스트레이터 설정 (선택)
+│   ├── README.md
+│   ├── claude-squad/
+│   │   └── config.template.json
+│   └── agent-orchestrator/
+│       └── agent-orchestrator.template.yaml
 └── templates/                     # 프로젝트별 템플릿
     ├── CLAUDE.md.template
     └── rules/
@@ -215,6 +242,55 @@ setup 후 추가할 수 있는 항목:
 - `.claude/settings.local.json` — `env`에 환경변수, `deny`에 위험 명령 추가
 - `.claude/agents/` — 프로젝트 특화 에이전트 추가
 - `.claude/skills/` — 프로젝트 특화 스킬 추가
+
+## 오케스트레이터 (선택)
+
+멀티 에이전트 세션을 관리하는 도구. `setup.sh --with-orchestrators`로 설정.
+
+### Claude Squad — 로컬 병렬 작업
+
+```bash
+brew install claude-squad
+cs                          # TUI 실행, 프로필로 에이전트 지정
+```
+
+6개 에이전트가 프로필로 매핑. 각 세션은 독립 git worktree에서 실행되어 충돌 없이 병렬 작업 가능.
+
+| 프로필 | 에이전트 | 역할 |
+|--------|----------|------|
+| `planner` | planner.md | 작업 분해, 영향 분석 |
+| `designer` | designer.md | UI/UX 설계 |
+| `developer` | developer.md | 코드 구현 |
+| `feedback` | feedback.md | 코드 품질 리뷰 |
+| `qa` | qa.md | 테스트 작성/실행 |
+| `security` | security.md | OWASP 보안 스캔 |
+
+### Agent Orchestrator — CI/CD 자동화
+
+```bash
+# 설치: https://github.com/ComposioHQ/agent-orchestrator
+ao start                    # 오케스트레이터 시작
+ao spawn my-app ISSUE-42    # 이슈에 에이전트 할당
+```
+
+| 이벤트 | 동작 |
+|--------|------|
+| CI 실패 | 에이전트가 로그 분석 → 자동 수정 (2회 재시도) |
+| 변경 요청 | 리뷰 코멘트 기반 자동 수정 |
+| 승인 + 통과 | 알림 (자동 머지 옵션) |
+
+### 조합 워크플로우
+
+```
+로컬 개발 (Claude Squad)          CI/CD (Agent Orchestrator)
+┌────────────────────┐           ┌──────────────────────┐
+│ 세션1: 프론트엔드    │  PR push  │ CI 실패 → 자동 수정   │
+│ 세션2: 백엔드 API   │ ───────→ │ 리뷰 → 자동 반영      │
+│ 세션3: 테스트       │           │ 승인 → 머지 알림      │
+└────────────────────┘           └──────────────────────┘
+```
+
+자세한 내용은 [`orchestrators/README.md`](orchestrators/README.md) 참조.
 
 ## 기술 스택 호환성
 
