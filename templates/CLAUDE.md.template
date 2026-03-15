@@ -1,0 +1,49 @@
+# {{PROJECT_NAME}}
+
+{{PROJECT_DESCRIPTION}}
+
+## Tech Stack
+
+- **Framework**: {{FRAMEWORK}}
+- **Styling**: {{STYLING}}
+- **Database**: {{DATABASE}}
+- **Testing**: {{TESTING}}
+- **Linting**: {{LINTING}}
+
+## Project Structure
+
+```
+{{PROJECT_NAME}}/
+├── .claude/
+│   ├── settings.local.json
+│   ├── agents/
+│   ├── rules/
+│   ├── hooks/
+│   └── skills/
+├── src/
+│   ├── app/
+│   ├── components/
+│   ├── features/
+│   └── lib/
+├── CLAUDE.md
+└── package.json
+```
+
+## Commands
+
+```bash
+npm run dev          # 개발 서버
+npm run build        # 프로덕션 빌드
+npm run lint         # ESLint
+npm test             # 단위 테스트
+npm run e2e          # E2E 테스트
+npx tsc --noEmit     # 타입 체크
+```
+
+## Rules
+
+프로젝트 규칙은 `.claude/rules/`에 분리 관리:
+
+- `conventions.md` — 코드 스타일, 파일/폴더, Server Action 패턴
+- `git.md` — Conventional Commits
+- `donts.md` — 금지 사항

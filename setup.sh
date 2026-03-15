@@ -1,0 +1,82 @@
+#!/bin/bash
+# claude-builds setup script
+# 새 프로젝트에 Claude Code 설정을 적용한다
+#
+# 사용법:
+#   cd /your/project
+#   bash /path/to/claude-builds/setup.sh
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(pwd)"
+PROJECT_NAME="$(basename "$PROJECT_DIR")"
+
+echo "=== claude-builds setup ==="
+echo "Project: $PROJECT_NAME"
+echo "Target:  $PROJECT_DIR"
+echo ""
+
+# .claude 디렉토리 생성
+mkdir -p "$PROJECT_DIR/.claude"/{agents,hooks,rules,skills,session-logs}
+
+# Agents 복사
+echo "[1/6] Agents..."
+cp "$SCRIPT_DIR/agents/"*.md "$PROJECT_DIR/.claude/agents/"
+
+# Hooks 복사 + 실행 권한
+echo "[2/6] Hooks..."
+cp "$SCRIPT_DIR/hooks/"*.sh "$PROJECT_DIR/.claude/hooks/"
+chmod +x "$PROJECT_DIR/.claude/hooks/"*.sh
+
+# Skills 복사
+echo "[3/6] Skills..."
+for skill_dir in "$SCRIPT_DIR/skills"/*/; do
+  skill_name="$(basename "$skill_dir")"
+  mkdir -p "$PROJECT_DIR/.claude/skills/$skill_name"
+  cp "$skill_dir/SKILL.md" "$PROJECT_DIR/.claude/skills/$skill_name/SKILL.md"
+done
+
+# Rules 복사
+echo "[4/6] Rules..."
+cp "$SCRIPT_DIR/rules/"*.md "$PROJECT_DIR/.claude/rules/"
+
+# Settings 템플릿 복사 (기존 파일이 없을 때만)
+echo "[5/6] Settings..."
+if [ ! -f "$PROJECT_DIR/.claude/settings.local.json" ]; then
+  # 훅 경로를 프로젝트 절대 경로로 치환
+  sed "s|\\.claude/hooks/|$PROJECT_DIR/.claude/hooks/|g" \
+    "$SCRIPT_DIR/settings/settings.template.json" \
+    > "$PROJECT_DIR/.claude/settings.local.json"
+  echo "  Created settings.local.json (훅 경로를 절대 경로로 설정)"
+  echo "  env 섹션에 프로젝트별 환경변수를 추가하세요"
+else
+  echo "  settings.local.json already exists, skipped"
+fi
+
+# CLAUDE.md 템플릿 복사 (기존 파일이 없을 때만)
+echo "[6/6] CLAUDE.md..."
+if [ ! -f "$PROJECT_DIR/CLAUDE.md" ]; then
+  sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
+    "$SCRIPT_DIR/templates/CLAUDE.md.template" \
+    > "$PROJECT_DIR/CLAUDE.md"
+  echo "  Created CLAUDE.md ({{PROJECT_NAME}} → $PROJECT_NAME)"
+  echo "  나머지 {{}} 플레이스홀더를 수동으로 채워주세요"
+else
+  echo "  CLAUDE.md already exists, skipped"
+fi
+
+echo ""
+echo "=== Setup complete ==="
+echo ""
+echo "적용된 구성:"
+echo "  - Agents:  $(ls "$PROJECT_DIR/.claude/agents/" | wc -l | tr -d ' ')개"
+echo "  - Hooks:   $(ls "$PROJECT_DIR/.claude/hooks/" | wc -l | tr -d ' ')개"
+echo "  - Skills:  $(ls "$PROJECT_DIR/.claude/skills/" | wc -l | tr -d ' ')개"
+echo "  - Rules:   $(ls "$PROJECT_DIR/.claude/rules/" | wc -l | tr -d ' ')개"
+echo ""
+echo "다음 단계:"
+echo "  1. .claude/settings.local.json 의 env 섹션에 프로젝트별 환경변수 추가"
+echo "  2. CLAUDE.md 의 플레이스홀더({{...}}) 채우기"
+echo "  3. 필요 시 .claude/rules/ 에 프로젝트별 규칙 추가 (예: supabase.md)"
+echo "  4. deny 목록에 프로젝트별 위험 명령 추가"

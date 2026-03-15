@@ -1,0 +1,106 @@
+# claude-builds
+
+Claude Code 프로젝트 설정 킷. 에이전트, 스킬, 훅, 규칙을 새 프로젝트에 한 번에 적용한다.
+
+## 빠른 시작
+
+```bash
+# 1. 클론
+git clone https://github.com/YOUR_USERNAME/claude-builds.git
+
+# 2. 새 프로젝트에 적용
+cd /your/project
+bash /path/to/claude-builds/setup.sh
+
+# 3. 프로젝트별 설정
+# .claude/settings.local.json → env 섹션에 환경변수 추가
+# CLAUDE.md → 플레이스홀더 채우기
+```
+
+## 구성 요소
+
+### Agents (6개)
+
+| 에이전트 | 역할 | 모델 |
+|---------|------|------|
+| `designer` | UI/UX 디자인, Tailwind CSS 스타일링 | sonnet |
+| `developer` | Server Actions, React 컴포넌트 구현 | sonnet |
+| `feedback` | 코드 품질 분석, 개선 제안 | sonnet |
+| `planner` | 작업 분해, 영향 분석, 구현 계획 | sonnet |
+| `qa` | Vitest + Playwright 테스트 작성/실행 | sonnet |
+| `security` | OWASP Top 10 보안 스캔 | sonnet |
+
+### Skills (9개)
+
+| 스킬 | 호출 | 설명 |
+|------|------|------|
+| `commit` | `/commit` | Conventional Commit 자동 생성 |
+| `design-sync` | `/design-sync <URL>` | 디자인 URL에서 CSS 추출 → 코드 싱크 |
+| `feedback` | `/feedback` | 최근 변경사항 품질 분석 |
+| `review-pr` | `/review-pr [N]` | GitHub PR 코드 리뷰 |
+| `scaffold` | `/scaffold [domain]` | 새 도메인 보일러플레이트 생성 |
+| `security` | `/security` | 전체 코드 보안 스캔 |
+| `status` | `/status` | 프로젝트 상태 대시보드 |
+| `test` | `/test [file]` | 단위 테스트 자동 생성 |
+| `verify` | `/verify` | lint → typecheck → test → e2e 검증 |
+
+### Hooks (7개)
+
+| 훅 | 트리거 | 역할 |
+|----|--------|------|
+| `command-guard.sh` | PreToolUse (Bash) | 위험 명령 차단 |
+| `prettier-format.sh` | PostToolUse (Write/Edit) | 코드 포맷팅 |
+| `eslint-fix.sh` | PostToolUse (Write/Edit) | 린트 자동 수정 |
+| `typecheck.sh` | PostToolUse (Write/Edit) | TypeScript 타입 체크 |
+| `test-runner.sh` | PostToolUse (Write/Edit) | 관련 테스트 실행 |
+| `uncommitted-warn.sh` | Stop | 미커밋 변경 경고 |
+| `session-log.sh` | Stop | 세션 로그 저장 |
+
+### Rules (3개 공통 + 템플릿)
+
+| 규칙 | 내용 |
+|------|------|
+| `conventions.md` | 코드 스타일, 파일 크기, Server Action 패턴 |
+| `git.md` | Conventional Commits, PR 규칙 |
+| `donts.md` | console.log, any 타입, 하드코딩 시크릿 금지 |
+| `templates/rules/supabase.md` | Supabase 프로젝트용 규칙 (선택) |
+
+## 디렉토리 구조
+
+```
+claude-builds/
+├── README.md
+├── setup.sh                       # 원클릭 설치 스크립트
+├── settings/
+│   └── settings.template.json     # 권한, 훅, env 템플릿
+├── agents/                        # 6개 전문 에이전트
+├── hooks/                         # 7개 자동화 훅
+├── skills/                        # 9개 CLI 스킬
+├── rules/                         # 3개 공통 규칙
+└── templates/                     # 프로젝트별 템플릿
+    ├── CLAUDE.md.template
+    └── rules/
+        └── supabase.md
+```
+
+## 프로젝트별 커스텀
+
+setup 후 추가할 수 있는 항목:
+
+- `.claude/rules/` — 프로젝트 고유 규칙 추가 (예: `supabase.md`, `prisma.md`)
+- `.claude/settings.local.json` — `env`에 환경변수, `deny`에 위험 명령 추가
+- `.claude/agents/` — 프로젝트 특화 에이전트 추가
+- `.claude/skills/` — 프로젝트 특화 스킬 추가
+
+## 기술 스택 호환성
+
+현재 Next.js + TypeScript + Tailwind CSS 기반으로 최적화되어 있으나,
+hooks와 rules를 수정하면 다른 스택에도 적용 가능:
+
+- **hooks**: Prettier/ESLint/TypeScript 경로만 수정
+- **rules**: 프레임워크별 conventions 수정
+- **agents**: 범용적으로 설계됨
+
+## 라이선스
+
+MIT
