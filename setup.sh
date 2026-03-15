@@ -152,5 +152,5 @@ echo "  4. deny 목록에 프로젝트별 위험 명령 추가"
 echo "  5. 메트릭이 쌓이면 /metrics 로 대시보드 확인"
 echo "  6. /retrospective 로 정기 회고 실행"
 if [ "$WITH_ORCHESTRATORS" = true ]; then
-  echo "  5. orchestrators/README.md 참고하여 오케스트레이터 설정 완료"
+  echo "  7. orchestrators/README.md 참고하여 오케스트레이터 설정 완료"
 fi
