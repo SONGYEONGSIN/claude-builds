@@ -49,6 +49,12 @@ echo ""
 
 # .claude 디렉토리 생성
 mkdir -p "$PROJECT_DIR/.claude"/{agents,hooks,rules,skills,session-logs,memory,metrics}
+# 메시지 버스 디렉토리
+AGENTS_LIST="developer qa security feedback planner designer retrospective grader comparator skill-reviewer moderator"
+mkdir -p "$PROJECT_DIR/.claude/messages"/{archive,debates,broadcast}
+for agent in $AGENTS_LIST; do
+  mkdir -p "$PROJECT_DIR/.claude/messages/inbox/$agent"
+done
 
 # Agents 복사
 echo "[1/$TOTAL_STEPS] Agents..."
@@ -159,6 +165,7 @@ echo "  - Skills:  $(ls "$PROJECT_DIR/.claude/skills/" | wc -l | tr -d ' ')개"
 echo "  - Rules:   $(ls "$PROJECT_DIR/.claude/rules/" | wc -l | tr -d ' ')개"
 echo "  - Memory:  .claude/memory/ (학습 패턴 저장)"
 echo "  - Metrics: .claude/metrics/ (자동 메트릭 수집)"
+echo "  - Messages: .claude/messages/ (에이전트 간 통신)"
 [ -f "$PROJECT_DIR/playwright.config.ts" ] && echo "  - Playwright: playwright.config.ts (HTML 리포트)"
 if [ "$WITH_ORCHESTRATORS" = true ]; then
   echo "  - Orchestrators:"

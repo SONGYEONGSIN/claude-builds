@@ -3,43 +3,47 @@
   "profiles": [
     {
       "name": "planner",
-      "program": "claude --allowedTools 'Read,Grep,Glob,Agent' --prompt '작업을 분석하고 구현 계획을 세워라. .claude/agents/planner.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob,Agent' --prompt '작업을 분석하고 구현 계획을 세워라. .claude/agents/planner.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list planner 로 수신함 확인.'"
     },
     {
       "name": "designer",
-      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt 'UI/UX를 설계하고 Tailwind CSS 스타일링을 제안하라. .claude/agents/designer.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt 'UI/UX를 설계하고 Tailwind CSS 스타일링을 제안하라. .claude/agents/designer.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list designer 로 수신함 확인.'"
     },
     {
       "name": "developer",
-      "program": "claude --allowedTools 'Read,Grep,Glob,Bash,Edit,Write' --prompt '코드를 구현하라. .claude/agents/developer.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash,Edit,Write' --prompt '코드를 구현하라. .claude/agents/developer.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list developer 로 수신함 확인.'"
     },
     {
       "name": "feedback",
-      "program": "claude --allowedTools 'Read,Grep,Glob,Bash' --prompt '코드 품질을 분석하고 개선안을 제시하라. .claude/agents/feedback.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash' --prompt '코드 품질을 분석하고 개선안을 제시하라. .claude/agents/feedback.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list feedback 로 수신함 확인.'"
     },
     {
       "name": "qa",
-      "program": "claude --allowedTools 'Read,Grep,Glob,Bash,Edit,Write' --prompt '테스트를 작성하고 실행하라. .claude/agents/qa.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash,Edit,Write' --prompt '테스트를 작성하고 실행하라. .claude/agents/qa.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list qa 로 수신함 확인.'"
     },
     {
       "name": "security",
-      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt 'OWASP Top 10 기준으로 보안 스캔하라. .claude/agents/security.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt 'OWASP Top 10 기준으로 보안 스캔하라. .claude/agents/security.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list security 로 수신함 확인.'"
     },
     {
       "name": "retrospective",
-      "program": "claude --allowedTools 'Read,Grep,Glob,Bash' --prompt '메트릭을 분석하고 개선안을 도출하라. .claude/agents/retrospective.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash' --prompt '메트릭을 분석하고 개선안을 도출하라. .claude/agents/retrospective.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list retrospective 로 수신함 확인.'"
     },
     {
       "name": "grader",
-      "program": "claude --allowedTools 'Read,Grep,Glob,Bash' --prompt 'eval 케이스를 실행하고 점수를 매겨라. .claude/agents/grader.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash' --prompt 'eval 케이스를 실행하고 점수를 매겨라. .claude/agents/grader.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list grader 로 수신함 확인.'"
     },
     {
       "name": "comparator",
-      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt '두 결과를 블라인드 비교하고 루브릭 기반 점수를 산출하라. .claude/agents/comparator.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt '두 결과를 블라인드 비교하고 루브릭 기반 점수를 산출하라. .claude/agents/comparator.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list comparator 로 수신함 확인.'"
     },
     {
       "name": "skill-reviewer",
-      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt '스킬을 8단계로 검토하고 100점 채점하라. .claude/agents/skill-reviewer.md 지침을 따르라.'"
+      "program": "claude --allowedTools 'Read,Grep,Glob' --prompt '스킬을 8단계로 검토하고 100점 채점하라. .claude/agents/skill-reviewer.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list skill-reviewer 로 수신함 확인.'"
+    },
+    {
+      "name": "moderator",
+      "program": "claude --allowedTools 'Read,Grep,Glob,Bash' --prompt '에이전트 간 토론을 중재하라. .claude/agents/moderator.md 지침을 따르라. 시작 시 bash .claude/hooks/message-bus.sh list moderator 로 수신함 확인.'"
     }
   ]
 }

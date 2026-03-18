@@ -45,7 +45,7 @@ reactions:
 
 # --- 운영 워크플로우 ---
 #
-# claude-builds의 10개 에이전트를 단계별로 활용:
+# claude-builds의 11개 에이전트를 단계별로 활용:
 #
 # 1. 기획 (planner)
 #    ao spawn {{PROJECT_NAME}} ISSUE-123
@@ -86,3 +86,7 @@ reactions:
 # 10. 스킬 리뷰 (skill-reviewer)
 #    ao spawn {{PROJECT_NAME}} SKILL-REVIEW-001
 #    ao send <session> "스킬을 8단계로 검토하라. .claude/agents/skill-reviewer.md 지침을 따르라."
+#
+# 11. 토론 중재 (moderator)
+#    ao spawn {{PROJECT_NAME}} DEBATE-001
+#    ao send <session> "에이전트 간 토론을 중재하라. .claude/agents/moderator.md 지침을 따르라."

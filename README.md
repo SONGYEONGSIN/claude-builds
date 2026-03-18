@@ -67,7 +67,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 │             │                                                       │
 │             ▼                                                       │
 │  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                     Hooks Pipeline (11개)                     │   │
+│  │                     Hooks Pipeline (12개)                     │   │
 │  │                                                               │   │
 │  │  ┌─ PreToolUse ──────────────────────────────────────────┐   │   │
 │  │  │  command-guard.sh  ── 위험 명령 차단 (force push 등)   │   │   │
@@ -83,6 +83,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 │  │  │  test-runner.sh        ── 관련 테스트 실행             │   │   │
 │  │  │  metrics-collector.sh  ── 메트릭 자동 수집             │   │   │
 │  │  │  pattern-check.sh      ── 학습 패턴 준수 확인          │   │   │
+│  │  │  debate-trigger.sh     ── 자동 토론 트리거             │   │   │
 │  │  └────────────────────────────────────────────────────────┘   │   │
 │  │                                                               │   │
 │  │  ┌─ Stop (세션 종료) ────────────────────────────────────┐   │   │
@@ -93,7 +94,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 │  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                    Skills (13개) — /명령어                     │   │
+│  │                    Skills (14개) — /명령어                     │   │
 │  │                                                               │   │
 │  │  ┌─ 개발 ────────┐  ┌─ 품질 ────────┐  ┌─ 운영 ────────┐   │   │
 │  │  │ /commit        │  │ /verify       │  │ /status       │   │   │
@@ -101,14 +102,16 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 │  │  │ /design-sync   │  │ /test         │  │ /review-pr    │   │   │
 │  │  └────────────────┘  │ /eval         │  └───────────────┘   │   │
 │  │                       └───────────────┘                       │   │
-│  │  ┌─ 학습 ────────────────────────────────────────────────┐   │   │
-│  │  │ /metrics  /learn  /retrospective                       │   │   │
-│  │  └────────────────────────────────────────────────────────┘   │   │
+│  │  ┌─ 학습 ────────┐  ┌─ 협업 ────────┐                       │   │
+│  │  │ /metrics       │  │ /discuss      │                       │   │
+│  │  │ /learn         │  └───────────────┘                       │   │
+│  │  │ /retrospective │                                          │   │
+│  │  └────────────────┘                                          │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                │                                    │
 │                                ▼                                    │
 │  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                    Agents (10개) — 전문 위임                   │   │
+│  │                    Agents (11개) — 전문 위임                   │   │
 │  │                                                               │   │
 │  │   ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────────┐   │   │
 │  │   │ planner  │ │ designer │ │developer │ │retrospective│   │   │
@@ -118,10 +121,10 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 │  │   │ feedback │ │    qa    │ │ security │ │   grader    │   │   │
 │  │   │ 코드리뷰  │ │ 테스트   │ │ 보안스캔 │ │ eval 평가   │   │   │
 │  │   └──────────┘ └──────────┘ └──────────┘ └─────────────┘   │   │
-│  │   ┌────────────┐ ┌────────────────┐                          │   │
-│  │   │ comparator │ │ skill-reviewer │                          │   │
-│  │   │ A/B 비교    │ │ 스킬 품질 검증  │                          │   │
-│  │   └────────────┘ └────────────────┘                          │   │
+│  │   ┌────────────┐ ┌────────────────┐ ┌─────────────┐          │   │
+│  │   │ comparator │ │ skill-reviewer │ │  moderator  │          │   │
+│  │   │ A/B 비교    │ │ 스킬 품질 검증  │ │ 토론 중재   │          │   │
+│  │   └────────────┘ └────────────────┘ └─────────────┘          │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -170,7 +173,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 │  PreToolUse   → command-guard + smart-guard (차단/검증) │
 │  도구 실행    → 파일 생성/수정                         │
 │  PostToolUse  → prettier → eslint → tsc → test        │
-│               → pattern-check (학습 패턴 준수 확인)    │
+│               → pattern-check → debate-trigger         │
 │                                                        │
 └────────────────────────────────────────────────────────┘
     │
@@ -184,7 +187,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 
 ## 구성 요소
 
-### Agents (10개)
+### Agents (11개)
 
 | 에이전트 | 역할 | 모델 |
 |---------|------|------|
@@ -193,18 +196,20 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `developer` | Server Actions, React 컴포넌트 구현 | opus |
 | `feedback` | 코드 품질 분석, 개선 제안 | opus |
 | `grader` | eval 결과 채점, PASS/FAIL 판정 + 근거 | opus |
+| `moderator` | 에이전트 간 토론 중재, 합의 도출 | opus |
 | `planner` | 작업 분해, 영향 분석, 구현 계획 | opus |
 | `qa` | Vitest + Playwright 테스트 작성/실행 | opus |
 | `retrospective` | 메트릭 분석 → 에이전트/스킬/규칙 개선안 도출 | opus |
 | `security` | OWASP Top 10 보안 스캔 | opus |
 | `skill-reviewer` | 스킬 품질 8단계 검토, 100점 스코어카드 | opus |
 
-### Skills (13개)
+### Skills (14개)
 
 | 스킬 | 호출 | 설명 |
 |------|------|------|
 | `commit` | `/commit` | Conventional Commit 자동 생성 |
 | `design-sync` | `/design-sync <URL\|이미지>` | 디자인 URL/캡처 이미지에서 CSS 추출 → 코드 싱크 ([상세](#design-sync-상세)) |
+| `discuss` | `/discuss "주제"` | 에이전트 간 토론 개시 — 주제별 자동 참가자 선정 + 구조화된 토론 |
 | `eval-skill` | `/eval <skill-name>` | 스킬 품질 정량 평가 — evals.json 기반 테스트 + grader 채점 |
 | `feedback` | `/feedback` | 최근 변경사항 품질 분석 |
 | `learn` | `/learn [save\|show]` | 프로젝트 메모리 관리 — 패턴/에러 해결법 저장·조회 |
@@ -217,7 +222,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `test` | `/test [file]` | 단위 테스트 자동 생성 |
 | `verify` | `/verify` | lint → typecheck → test → e2e 검증 |
 
-### Hooks (11개)
+### Hooks (12개)
 
 | 훅 | 트리거 | 역할 |
 |----|--------|------|
@@ -229,6 +234,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `test-runner.sh` | PostToolUse (Write/Edit) | 관련 테스트 실행 |
 | `metrics-collector.sh` | PostToolUse (Write/Edit) | 메트릭 자동 수집 |
 | `pattern-check.sh` | PostToolUse (Write/Edit) | 학습 패턴 준수 확인 (비차단) |
+| `debate-trigger.sh` | PostToolUse (Write/Edit) | 충돌 패턴 감지 시 자동 토론 트리거 |
 | `uncommitted-warn.sh` | Stop | 미커밋 변경 경고 |
 | `session-review.sh` | Stop | 세션 품질 종합 리뷰 (메트릭 요약 + 학습 제안) |
 | `session-log.sh` | Stop | 세션 로그 저장 |
@@ -385,9 +391,9 @@ claude-builds/
 ├── setup.sh                       # 원클릭 설치 스크립트 (--with-orchestrators)
 ├── settings/
 │   └── settings.template.json     # 권한, 훅, env, MCP 서버 템플릿
-├── agents/                        # 10개 전문 에이전트
-├── hooks/                         # 11개 자동화 훅
-├── skills/                        # 13개 CLI 스킬
+├── agents/                        # 11개 전문 에이전트
+├── hooks/                         # 12개 자동화 훅
+├── skills/                        # 14개 CLI 스킬
 ├── rules/                         # 3개 공통 규칙
 ├── docs/
 │   └── architecture.png           # 아키텍처 다이어그램
@@ -426,7 +432,7 @@ brew install claude-squad
 cs                          # TUI 실행, 프로필로 에이전트 지정
 ```
 
-10개 에이전트가 프로필로 매핑. 각 세션은 독립 git worktree에서 실행되어 충돌 없이 병렬 작업 가능.
+11개 에이전트가 프로필로 매핑. 각 세션은 독립 git worktree에서 실행되어 충돌 없이 병렬 작업 가능. 에이전트 간 파일 기반 메시지 버스로 통신.
 
 | 프로필 | 에이전트 | 역할 |
 |--------|----------|------|
@@ -440,6 +446,7 @@ cs                          # TUI 실행, 프로필로 에이전트 지정
 | `grader` | grader.md | eval 결과 채점 |
 | `comparator` | comparator.md | 블라인드 A/B 비교 |
 | `skill-reviewer` | skill-reviewer.md | 스킬 품질 8단계 검토 |
+| `moderator` | moderator.md | 에이전트 간 토론 중재 |
 
 ### Agent Orchestrator — CI/CD 자동화
 
@@ -468,6 +475,60 @@ ao spawn my-app ISSUE-42    # 이슈에 에이전트 할당
 
 자세한 내용은 [`orchestrators/README.md`](orchestrators/README.md) 참조.
 
+## 에이전트 간 통신
+
+에이전트끼리 파일 기반 메시지 버스로 통신하고, 의견 충돌 시 구조화된 토론을 통해 합의를 도출한다.
+
+### 메시지 버스
+
+`hooks/message-bus.sh`가 에이전트 간 통신 인프라를 제공한다.
+
+```bash
+# 메시지 전송
+bash .claude/hooks/message-bus.sh send <from> <to> <type> <priority> "<subject>" "<body>"
+
+# 수신함 확인
+bash .claude/hooks/message-bus.sh list <agent-name>
+
+# 전체 공지
+bash .claude/hooks/message-bus.sh broadcast <from> <type> <priority> "<subject>" "<body>"
+```
+
+모든 에이전트는 세션 시작 시 자신의 수신함을 확인하고, `critical`/`high` 메시지를 우선 처리한다.
+
+### 토론 시스템
+
+충돌 패턴 감지 시 `moderator` 에이전트가 구조화된 토론을 진행한다.
+
+```
+충돌 감지 (훅 / 에이전트 알림 / /discuss 명령)
+    ↓
+Opening — 각 참가자가 입장·논거·근거·확신도 제출
+    ↓
+Rebuttals (최대 3라운드) — 상대 논거 반박, 확신도 업데이트
+    ↓
+Verdict — moderator 최종 판정 + action_items + memory 업데이트
+```
+
+**자동 트리거 조건** (`debate-trigger.sh`):
+- 인증 관련 파일에서 TypeScript 에러 → security + developer 토론
+- Server Action 테스트 실패 → qa + developer 토론
+- 같은 파일 3회 이상 실패 → developer + feedback + qa 토론
+
+**수동 토론**: `/discuss "주제"` 또는 `/discuss "주제" --agents qa,developer`
+
+### 통신 디렉토리
+
+```
+.claude/messages/
+├── inbox/           # 에이전트별 수신함 (gitignore)
+├── archive/         # 처리된 메시지 (gitignore)
+├── debates/         # 토론 기록 (git 추적, 영구 보관)
+└── broadcast/       # 전체 공지 (gitignore)
+```
+
+---
+
 ## 학습 시스템
 
 코드 수정 시 메트릭이 자동 수집되고, 프로젝트 경험이 `.claude/memory/`에 축적된다.
@@ -477,10 +538,12 @@ ao spawn my-app ISSUE-42    # 이슈에 에이전트 할당
 ```
 [코드 수정] → metrics-collector.sh → .claude/metrics/daily-*.json
 [코드 수정] → pattern-check.sh → 학습 패턴 준수 피드백
-[세션 종료] → session-review.sh → 세션 품질 종합 리뷰
+[코드 수정] → debate-trigger.sh → 충돌 감지 시 자동 토론 개시
+[세션 종료] → session-review.sh → 세션 품질 종합 리뷰 (+ 에이전트 알림)
 [세션 종료] → session-log.sh → .claude/session-logs/ (메트릭 요약 포함)
 [사용자 호출] → /eval <skill> → evals.json 테스트 → benchmark.json
-[사용자 호출] → /retrospective → 종합 분석 + eval 데이터 → .claude/memory/ 업데이트
+[사용자 호출] → /discuss "주제" → moderator 토론 → .claude/messages/debates/
+[사용자 호출] → /retrospective → 종합 분석 + eval + 토론 데이터 → .claude/memory/ 업데이트
 ```
 
 ### 메트릭 자동 수집

@@ -39,6 +39,7 @@ cp orchestrators/claude-squad/config.template.json ~/.claude-squad/config.json
 | grader | agents/grader.md | eval 결과 채점 | Read, Grep, Glob, Bash |
 | comparator | agents/comparator.md | 블라인드 A/B 비교 | Read, Grep, Glob |
 | skill-reviewer | agents/skill-reviewer.md | 스킬 품질 8단계 검토 | Read, Grep, Glob |
+| moderator | agents/moderator.md | 에이전트 간 토론 중재 | Read, Grep, Glob, Bash |
 
 ### 사용법
 
@@ -73,7 +74,22 @@ cs                    # TUI 실행
 6. security 세션 → 보안 점검
 7. retrospective 세션 → 메트릭 분석 + 개선안 도출
 8. grader 세션 → eval 채점 (스킬 품질 측정 시)
+9. moderator 세션 → 에이전트 간 의견 충돌 토론 중재
 ```
+
+### 에이전트 간 통신
+
+Claude Squad 세션 간 파일 기반 메시지 버스(`message-bus.sh`)로 통신한다.
+
+```bash
+# 에이전트 A가 에이전트 B에게 메시지 전송
+bash .claude/hooks/message-bus.sh send developer qa request medium "테스트 확인 요청" "user-profile.ts 수정 완료. 테스트 확인 부탁."
+
+# 각 에이전트는 세션 시작 시 수신함 확인
+bash .claude/hooks/message-bus.sh list qa
+```
+
+**자동 토론 트리거**: `debate-trigger.sh` 훅이 충돌 패턴(인증 파일 에러, 테스트 반복 실패 등)을 감지하면 `moderator` 에이전트가 구조화된 토론을 중재한다. 토론 기록은 `.claude/messages/debates/`에 영구 보관.
 
 ---
 

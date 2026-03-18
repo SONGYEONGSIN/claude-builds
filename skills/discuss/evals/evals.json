@@ -1,0 +1,27 @@
+{
+  "skill_name": "discuss",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Server Action에서 인증 체크가 필요한지에 대해 security와 developer 간 토론을 진행하라",
+      "expectations": [
+        { "description": "토론 JSON 파일이 .claude/messages/debates/에 생성됨", "type": "must_pass" },
+        { "description": "토론 MD 트랜스크립트가 생성됨", "type": "must_pass" },
+        { "description": "최소 2명의 참가자가 opening statement를 제출함", "type": "must_pass" },
+        { "description": "verdict에 action_items가 포함됨", "type": "should_pass" },
+        { "description": "메모리 업데이트 제안이 포함됨", "type": "nice_to_have" }
+      ],
+      "model": "opus"
+    },
+    {
+      "id": 2,
+      "prompt": "테스트 전략에 대해 qa, developer, feedback 3명이 참가하는 토론을 진행하라. --agents qa,developer,feedback",
+      "expectations": [
+        { "description": "3명의 참가자가 토론에 참여함", "type": "must_pass" },
+        { "description": "각 참가자의 입장이 구분되어 기록됨", "type": "must_pass" },
+        { "description": "최종 판정에 합의 유형이 명시됨", "type": "should_pass" }
+      ],
+      "model": "opus"
+    }
+  ]
+}

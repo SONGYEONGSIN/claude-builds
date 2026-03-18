@@ -82,6 +82,14 @@ if [ "$SESSION_COMMITS" -gt 0 ]; then
   echo "📝 이번 세션 커밋: ${SESSION_COMMITS}개"
 fi
 
+# 5. 에이전트 간 통신: 미커밋 변경이 많으면 feedback에 알림
+MSG_BUS=".claude/hooks/message-bus.sh"
+if [ -f "$MSG_BUS" ] && [ "$UNCOMMITTED" -gt 5 ] 2>/dev/null; then
+  bash "$MSG_BUS" send "session-review" "feedback" "request" "medium" \
+    "세션 종료 — 미커밋 변경 ${UNCOMMITTED}개" \
+    "커밋되지 않은 변경이 ${UNCOMMITTED}개 파일에 있습니다. 다음 세션에서 코드 리뷰를 권장합니다." >/dev/null 2>&1 || true
+fi
+
 echo ""
 echo "──────────────────────────────────────"
 exit 0
