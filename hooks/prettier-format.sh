@@ -21,3 +21,5 @@ if [ -n "$FILE_PATH" ] && [ -f "$FILE_PATH" ]; then
 else
   echo "SKIPPED: file not found or empty path" >> "$LOG_FILE"
 fi
+
+exit 0

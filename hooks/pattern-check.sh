@@ -19,7 +19,10 @@ if [ -z "$FILE_PATH" ] || [ ! -f "$FILE_PATH" ]; then
   exit 0
 fi
 
-PATTERNS_FILE=".claude/memory/patterns.md"
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+[ -z "$PROJECT_ROOT" ] && exit 0
+
+PATTERNS_FILE="${PROJECT_ROOT}/.claude/memory/patterns.md"
 
 # patterns.md가 없으면 검증 스킵
 if [ ! -f "$PATTERNS_FILE" ]; then
@@ -41,7 +44,7 @@ while IFS= read -r line; do
     CHECK_PATTERN="${BASH_REMATCH[2]}"
 
     # 파일에 해당 패턴이 있으면 경고
-    if grep -q "$CHECK_PATTERN" "$FILE_PATH" 2>/dev/null; then
+    if grep -qF "$CHECK_PATTERN" "$FILE_PATH" 2>/dev/null; then
       WARNINGS="${WARNINGS}\n  - 패턴 위반: ${CHECK_PATTERN}"
     fi
   fi
@@ -52,7 +55,7 @@ while IFS= read -r line; do
 
     # TypeScript 파일에만 적용되는 패턴
     if [[ "$EXT" == "ts" || "$EXT" == "tsx" ]]; then
-      if ! grep -q "$REQ_PATTERN" "$FILE_PATH" 2>/dev/null; then
+      if ! grep -qF "$REQ_PATTERN" "$FILE_PATH" 2>/dev/null; then
         WARNINGS="${WARNINGS}\n  - 필수 패턴 누락: ${REQ_PATTERN}"
       fi
     fi

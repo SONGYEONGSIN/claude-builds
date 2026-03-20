@@ -15,11 +15,13 @@
 
 set -e
 
-PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
 if [ -z "$PROJECT_ROOT" ]; then
   echo "ERROR: git 프로젝트가 아닙니다" >&2
   exit 1
 fi
+
+command -v jq &>/dev/null || { echo "ERROR: jq required" >&2; exit 1; }
 
 MSG_DIR="${PROJECT_ROOT}/.claude/messages"
 INBOX_DIR="${MSG_DIR}/inbox"
@@ -54,7 +56,7 @@ case "$ACTION" in
       exit 1
     fi
     ensure_dirs
-    FROM="$1"; TO="$2"; TYPE="$3"; PRIORITY="$4"; SUBJECT="$5"; BODY="$6"
+    FROM="$1"; TO="$(basename "$2")"; TYPE="$3"; PRIORITY="$4"; SUBJECT="$5"; BODY="$6"
     CONTEXT="${7:-null}"
     MSG_ID=$(generate_id)
     TIMESTAMP=$(date '+%Y-%m-%dT%H:%M:%S%z')

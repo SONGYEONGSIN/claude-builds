@@ -10,6 +10,9 @@
 # 기존 uncommitted-warn.sh의 단순 카운트를 대체하여
 # 더 풍부한 세션 리뷰를 제공한다.
 
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 echo ""
 echo "╔══════════════════════════════════════╗"
 echo "║       SESSION REVIEW                 ║"
@@ -35,7 +38,7 @@ fi
 
 # 2. 오늘의 메트릭 확인
 TODAY=$(date +%Y-%m-%d)
-METRICS_FILE=".claude/metrics/daily-${TODAY}.json"
+METRICS_FILE="${PROJECT_ROOT}/.claude/metrics/daily-${TODAY}.json"
 
 if [ -f "$METRICS_FILE" ] && command -v jq &>/dev/null; then
   TOTAL_EVENTS=$(jq '.events | length' "$METRICS_FILE" 2>/dev/null || echo "0")
@@ -57,7 +60,7 @@ if [ -f "$METRICS_FILE" ] && command -v jq &>/dev/null; then
 fi
 
 # 3. 학습 저장 제안
-MEMORY_DIR=".claude/memory"
+MEMORY_DIR="${PROJECT_ROOT}/.claude/memory"
 if [ -d "$MEMORY_DIR" ]; then
   PATTERNS_FILE="$MEMORY_DIR/patterns.md"
   if [ -f "$PATTERNS_FILE" ]; then
@@ -83,7 +86,7 @@ if [ "$SESSION_COMMITS" -gt 0 ]; then
 fi
 
 # 5. 에이전트 간 통신: 미커밋 변경이 많으면 feedback에 알림
-MSG_BUS="hooks/message-bus.sh"
+MSG_BUS="${SCRIPT_DIR}/message-bus.sh"
 if [ -f "$MSG_BUS" ] && [ "$UNCOMMITTED" -gt 5 ] 2>/dev/null; then
   bash "$MSG_BUS" send "session-review" "feedback" "request" "medium" \
     "세션 종료 — 미커밋 변경 ${UNCOMMITTED}개" \

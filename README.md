@@ -222,7 +222,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `test` | `/test [file]` | 단위 테스트 자동 생성 |
 | `verify` | `/verify` | lint → typecheck → test → e2e 검증 |
 
-### Hooks (12개)
+### Hooks (13개)
 
 | 훅 | 트리거 | 역할 |
 |----|--------|------|
@@ -238,6 +238,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `uncommitted-warn.sh` | Stop | 미커밋 변경 경고 |
 | `session-review.sh` | Stop | 세션 품질 종합 리뷰 (메트릭 요약 + 학습 제안) |
 | `session-log.sh` | Stop | 세션 로그 저장 |
+| `message-bus.sh` | — (유틸리티) | 에이전트 간 메시지 전송/수신/아카이브 |
 
 ### Rules (3개 공통 + 템플릿)
 
@@ -245,7 +246,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 |------|------|
 | `conventions.md` | 코드 스타일, 파일 크기, Server Action 패턴 |
 | `git.md` | Conventional Commits, 브랜치 네이밍, PR 규칙, HARD-GATE (20개 파일) |
-| `donts.md` | 코드 품질, 보안, 패턴, 완료 기준 금지 사항 (15항목) |
+| `donts.md` | 코드 품질, 보안, 패턴, 완료 기준 금지 사항 (14항목) |
 | `templates/rules/supabase.md` | Supabase 프로젝트용 규칙 (선택) |
 
 ## Design Sync 상세
@@ -276,9 +277,9 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 라이브 URL에서 Playwright로 computed style을 직접 추출한다. 가장 정밀하며 **싱크율 95% 이상** 목표.
 
 ```
-Step 1 → 기준 측정       참고 + 로컬 스크린샷 비교 → 초기 싱크율
-Step 2 → 토큰 추출       보정 계수 자동 산출 + 글로벌 토큰 JSON
-Step 3 → 인벤토리        전체 페이지 원패스 추출 → 영역/타입별 분류
+Step 1 → 토큰 추출       보정 계수 자동 산출 + 글로벌 토큰 JSON
+Step 2 → 인벤토리        전체 페이지 원패스 추출 → 영역/타입별 분류
+Step 3 → 기준 측정       참고 + 로컬 스크린샷 비교 → 초기 싱크율
 Step 4 → 매핑 + Diff     참고 요소 ↔ 코드베이스 매핑 → 변경 제안
 Step 5 → 수정 적용       파일별 × 카테고리별 수정, tsc+test 검증
 Step 6 → 최종 검증       다시 스크린샷 비교 → 최종 싱크율

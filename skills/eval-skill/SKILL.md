@@ -1,5 +1,5 @@
 ---
-name: eval
+name: eval-skill
 description: 지정 스킬의 evals를 실행하여 품질을 정량 측정한다
 argument-hint: <skill-name>
 ---

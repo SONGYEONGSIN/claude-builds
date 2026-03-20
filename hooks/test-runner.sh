@@ -29,7 +29,8 @@ case "$FILE_PATH" in
       for SUFFIX in ts tsx js jsx; do
         for CANDIDATE in \
           "$DIRNAME/$BASENAME.$EXT.$SUFFIX" \
-          "$DIRNAME/__tests__/$BASENAME.$SUFFIX"; do
+          "$DIRNAME/__tests__/$BASENAME.$SUFFIX" \
+          "$DIRNAME/__tests__/$BASENAME.$EXT.$SUFFIX"; do
           if [ -f "$CANDIDATE" ]; then
             TEST_FILE="$CANDIDATE"
             break 3

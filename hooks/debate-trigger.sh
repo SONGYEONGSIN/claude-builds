@@ -15,7 +15,8 @@ esac
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 [ -z "$PROJECT_ROOT" ] && exit 0
 
-MSG_BUS="${PROJECT_ROOT}/hooks/message-bus.sh"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MSG_BUS="${SCRIPT_DIR}/message-bus.sh"
 [ -f "$MSG_BUS" ] || exit 0
 command -v jq &>/dev/null || exit 0
 
@@ -93,6 +94,7 @@ if [ "$DEBATE_NEEDED" = false ]; then
 fi
 
 if [ "$DEBATE_NEEDED" = true ]; then
+  mkdir -p "$(dirname "$TRIGGER_FILE")"
   echo "$NOW" > "$TRIGGER_FILE"
 
   CONTEXT=$(jq -n \

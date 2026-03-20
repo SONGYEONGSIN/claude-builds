@@ -22,7 +22,8 @@
 │   ├── hooks/
 │   ├── skills/
 │   ├── memory/          # 학습 패턴/에러 해결법 축적
-│   └── metrics/         # 자동 수집 메트릭
+│   ├── metrics/         # 자동 수집 메트릭
+│   └── messages/        # 에이전트 간 통신 (inbox, debates 등)
 ├── src/
 │   ├── app/            # Next.js App Router 페이지
 │   ├── components/     # React 컴포넌트 (도메인별 폴더)
