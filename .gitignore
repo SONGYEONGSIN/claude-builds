@@ -32,6 +32,9 @@ coverage/
 .claude/messages/broadcast/
 .claude/messages/.last-debate-trigger
 
+# Sync (머신별 설정)
+sync-memory.conf
+
 # IDE
 .vscode/
 .idea/
