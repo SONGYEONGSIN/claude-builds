@@ -83,7 +83,7 @@ if [ "$SESSION_COMMITS" -gt 0 ]; then
 fi
 
 # 5. 에이전트 간 통신: 미커밋 변경이 많으면 feedback에 알림
-MSG_BUS=".claude/hooks/message-bus.sh"
+MSG_BUS="hooks/message-bus.sh"
 if [ -f "$MSG_BUS" ] && [ "$UNCOMMITTED" -gt 5 ] 2>/dev/null; then
   bash "$MSG_BUS" send "session-review" "feedback" "request" "medium" \
     "세션 종료 — 미커밋 변경 ${UNCOMMITTED}개" \

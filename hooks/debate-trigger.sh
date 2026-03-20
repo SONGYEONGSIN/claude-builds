@@ -15,7 +15,7 @@ esac
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 [ -z "$PROJECT_ROOT" ] && exit 0
 
-MSG_BUS="${PROJECT_ROOT}/.claude/hooks/message-bus.sh"
+MSG_BUS="${PROJECT_ROOT}/hooks/message-bus.sh"
 [ -f "$MSG_BUS" ] || exit 0
 command -v jq &>/dev/null || exit 0
 
