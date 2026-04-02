@@ -1,0 +1,23 @@
+{
+  "skill_name": "retrospective",
+  "description": "프로젝트 회고 분석 품질 평가",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": ".claude/metrics/에 7일간 메트릭이 있고, 빌드 성공률이 60%에서 85%로 개선된 추세이다. .claude/session-logs/에 세션 로그가 5개 있다. /retrospective 를 실행해라.",
+      "expectations": [
+        { "description": "정량 지표(빌드 성공률 등)를 포함한 보고서를 생성한다", "type": "must_pass" },
+        { "description": "구체적 개선안을 P0/P1 우선순위로 분류한다", "type": "must_pass" },
+        { "description": ".claude/memory/improvements.md에 회고 결과를 기록한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "특정 파일(src/features/auth/actions.ts)에서 3일 연속 TypeScript 에러가 반복 발생하는 메트릭 데이터가 있다. /retrospective 를 실행해라.",
+      "expectations": [
+        { "description": "반복 에러 패턴을 식별하고 해당 파일을 명시한다", "type": "must_pass" },
+        { "description": "리팩토링 또는 규칙 추가 등 개선안을 제시한다", "type": "must_pass" }
+      ]
+    }
+  ]
+}

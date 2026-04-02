@@ -12,6 +12,7 @@
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${SCRIPT_DIR}/_common.sh"
 
 echo ""
 echo "╔══════════════════════════════════════╗"
@@ -64,11 +65,7 @@ MEMORY_DIR="${PROJECT_ROOT}/.claude/memory"
 if [ -d "$MEMORY_DIR" ]; then
   PATTERNS_FILE="$MEMORY_DIR/patterns.md"
   if [ -f "$PATTERNS_FILE" ]; then
-    if [ "$(uname)" = "Darwin" ]; then
-      MOD_TIME=$(stat -f %m "$PATTERNS_FILE" 2>/dev/null || echo "0")
-    else
-      MOD_TIME=$(stat -c %Y "$PATTERNS_FILE" 2>/dev/null || echo "0")
-    fi
+    MOD_TIME=$(get_file_mtime "$PATTERNS_FILE")
     PATTERNS_AGE=$(( ($(date +%s) - MOD_TIME) / 86400 ))
     if [ "$PATTERNS_AGE" -gt 7 ]; then
       echo ""

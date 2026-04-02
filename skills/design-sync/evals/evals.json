@@ -1,0 +1,24 @@
+{
+  "skill_name": "design-sync",
+  "description": "디자인 싱크 워크플로우 이해도 평가",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/design-sync https://example.com 명령을 받았다. 실행할 7단계 워크플로우를 순서대로 설명하고, 각 단계에서 생성되는 산출물을 나열해라.",
+      "expectations": [
+        { "description": "7단계(토큰 추출, 인벤토리, 기준 측정, 매핑+Diff, 수정 적용, 최종 검증, 학습+정리)를 모두 나열한다", "type": "must_pass" },
+        { "description": "tokens.json, inventory.json, mapping.json 산출물을 언급한다", "type": "must_pass" },
+        { "description": "싱크율 95% 이상 목표를 명시한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/design-sync --from-image screenshot.png 명령을 받았다. URL 모드와의 차이점을 설명하고, 5단계 워크플로우를 나열해라.",
+      "expectations": [
+        { "description": "이미지 모드가 5단계(AI Vision 토큰 추출, 인벤토리, 비주얼 비교, 매핑+수정, 최종 검증)임을 설명한다", "type": "must_pass" },
+        { "description": "이미지 모드에서 Playwright 대신 AI Vision + Sharp를 사용함을 언급한다", "type": "must_pass" },
+        { "description": "싱크율 목표가 85~90%로 URL 모드보다 낮음을 언급한다", "type": "should_pass" }
+      ]
+    }
+  ]
+}

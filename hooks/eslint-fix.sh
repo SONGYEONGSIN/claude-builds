@@ -1,7 +1,8 @@
 #!/bin/bash
 # ESLint auto-fix hook - PostToolUse (Edit/Write)
 INPUT=$(cat)
-LOG_FILE="/tmp/eslint-hook.log"
+source "$(dirname "$0")/_common.sh"
+LOG_FILE="$ESLINT_LOG"
 # 로그 1MB 초과 시 truncate
 [ -f "$LOG_FILE" ] && [ "$(wc -c < "$LOG_FILE" 2>/dev/null)" -gt 1048576 ] && tail -100 "$LOG_FILE" > "$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"
 

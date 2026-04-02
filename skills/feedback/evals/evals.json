@@ -1,0 +1,32 @@
+{
+  "skill_name": "feedback",
+  "description": "코드 품질 피드백 분석 평가",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "다음 git diff 결과에 대해 /feedback을 실행해라: 새 파일 src/features/auth/actions.ts에 120줄 함수 loginUser가 있고, console.log가 3곳, any 타입이 2곳 있다.",
+      "expectations": [
+        { "description": "함수 크기 초과(50줄 제한)를 지적한다", "type": "must_pass" },
+        { "description": "console.log 사용을 금지 사항으로 지적한다", "type": "must_pass" },
+        { "description": "any 타입 사용을 금지 사항으로 지적한다", "type": "must_pass" },
+        { "description": "점수를 X/10 형식으로 제시한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "git diff에서 Server Action에 'use server' 선언이 없고, revalidatePath 호출 없이 데이터를 수정하는 코드가 있다. /feedback을 실행해라.",
+      "expectations": [
+        { "description": "Server Action 패턴 미준수를 지적한다", "type": "must_pass" },
+        { "description": "revalidatePath 누락을 언급한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "git diff 결과가 깔끔하다: 40줄 이하 함수, 타입 명시, console.log 없음, Server Action 패턴 준수. /feedback을 실행해라.",
+      "expectations": [
+        { "description": "높은 점수(8/10 이상)를 부여한다", "type": "must_pass" },
+        { "description": "잘한 점 섹션에 구체적 항목을 나열한다", "type": "should_pass" }
+      ]
+    }
+  ]
+}

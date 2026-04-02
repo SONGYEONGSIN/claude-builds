@@ -1,0 +1,33 @@
+{
+  "skill_name": "eval-skill",
+  "description": "Eval 러너 메타 평가 — eval 실행 및 보고 정확성",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/eval commit 을 실행해라. commit 스킬의 evals.json에 4개 eval이 있다.",
+      "expectations": [
+        { "description": "evals.json을 올바르게 로드한다", "type": "must_pass" },
+        { "description": "각 eval에 대해 PASS/FAIL 판정을 내린다", "type": "must_pass" },
+        { "description": "Pass Rate를 X/N (XX.X%) 형식으로 출력한다", "type": "must_pass" },
+        { "description": "benchmark.json을 저장한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "evals.json이 없는 스킬에 대해 /eval nonexistent 를 실행해라.",
+      "expectations": [
+        { "description": "eval 미설정 안내 메시지를 출력한다", "type": "must_pass" },
+        { "description": "에러 없이 종료한다", "type": "must_pass" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/eval --all 을 실행해라. evals.json이 있는 스킬이 여러 개 있다.",
+      "expectations": [
+        { "description": "evals.json이 있는 스킬만 실행한다", "type": "must_pass" },
+        { "description": "전체 요약(Overall: X/Y (XX.X%))을 출력한다", "type": "must_pass" },
+        { "description": "스킬별 개별 결과를 나열한다", "type": "should_pass" }
+      ]
+    }
+  ]
+}

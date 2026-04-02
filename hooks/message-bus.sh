@@ -14,6 +14,7 @@
 # 우선순위: critical, high, medium, low
 
 set -e
+source "$(dirname "$0")/_common.sh"
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
 if [ -z "$PROJECT_ROOT" ]; then
@@ -45,7 +46,7 @@ generate_id() {
   local ts
   ts=$(date '+%Y%m%d-%H%M%S')
   local rand
-  rand=$(head -c 4 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 4)
+  rand=$(generate_random_hex)
   echo "msg-${ts}-${rand}"
 }
 

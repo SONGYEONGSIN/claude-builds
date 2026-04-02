@@ -4,6 +4,7 @@
 # 실패해도 exit 0 — 기존 워크플로우를 절대 차단하지 않음
 
 INPUT=$(cat)
+source "$(dirname "$0")/_common.sh"
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
 
@@ -44,11 +45,7 @@ collect_result() {
   # 로그 파일의 최근 수정 시간이 10초 이내면 이번 훅 실행 결과
   local now=$(date +%s)
   local mod
-  if [ "$(uname)" = "Darwin" ]; then
-    mod=$(stat -f %m "$log_file" 2>/dev/null || echo 0)
-  else
-    mod=$(stat -c %Y "$log_file" 2>/dev/null || echo 0)
-  fi
+  mod=$(get_file_mtime "$log_file")
   local diff=$((now - mod))
 
   if [ "$diff" -gt 10 ]; then
@@ -85,10 +82,10 @@ collect_result() {
   fi
 }
 
-PRETTIER_RESULT=$(collect_result "/tmp/prettier-hook.log")
-ESLINT_RESULT=$(collect_result "/tmp/eslint-hook.log")
-TYPECHECK_RESULT=$(collect_result "/tmp/typecheck-hook.log")
-TEST_RESULT=$(collect_result "/tmp/test-runner-hook.log")
+PRETTIER_RESULT=$(collect_result "$PRETTIER_LOG")
+ESLINT_RESULT=$(collect_result "$ESLINT_LOG")
+TYPECHECK_RESULT=$(collect_result "$TYPECHECK_LOG")
+TEST_RESULT=$(collect_result "$TEST_RUNNER_LOG")
 
 # 모두 skip이면 기록 안 함
 if [ "$PRETTIER_RESULT" = "skip" ] && [ "$ESLINT_RESULT" = "skip" ] && [ "$TYPECHECK_RESULT" = "skip" ] && [ "$TEST_RESULT" = "skip" ]; then

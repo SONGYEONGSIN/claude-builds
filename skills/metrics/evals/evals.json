@@ -1,0 +1,32 @@
+{
+  "skill_name": "metrics",
+  "description": "메트릭 대시보드 출력 품질 평가",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": ".claude/metrics/daily-2026-04-01.json에 20개 이벤트가 있고, typecheck 실패 5회, test 실패 3회인 상황이다. /metrics 를 실행해라.",
+      "expectations": [
+        { "description": "총 이벤트 수(20개)를 정확히 보고한다", "type": "must_pass" },
+        { "description": "빌드 성공률을 퍼센트로 계산하여 제시한다", "type": "must_pass" },
+        { "description": "TypeScript 에러 5회, 테스트 실패 3회를 표로 제시한다", "type": "must_pass" },
+        { "description": "성공률 기준에 따라 상태(양호/보통/개선 필요)를 판정한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": ".claude/metrics/ 디렉토리에 daily-*.json 파일이 없는 상황이다. /metrics 를 실행해라.",
+      "expectations": [
+        { "description": "메트릭이 없다는 안내 메시지를 출력한다", "type": "must_pass" },
+        { "description": "코드를 수정하면 자동 수집됨을 안내한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "최근 7일간 daily-*.json이 5개 있는 상황이다. /metrics week 를 실행해라.",
+      "expectations": [
+        { "description": "날짜별 추이 테이블을 출력한다", "type": "must_pass" },
+        { "description": "핫스팟 파일(가장 많이 수정된 파일)을 보고한다", "type": "should_pass" }
+      ]
+    }
+  ]
+}

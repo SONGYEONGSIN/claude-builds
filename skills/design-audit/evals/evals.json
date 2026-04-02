@@ -1,0 +1,33 @@
+{
+  "skill_name": "design-audit",
+  "description": "디자인 시스템 준수 감사 품질 평가",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "src/ 디렉토리에 .tsx 파일 20개가 있고, 그 중 8개에 #334155, #f3f4f6 등 하드코딩된 hex 색상이 있으며, design-tokens.ts는 존재하지 않는 상황이다. /design-audit를 실행해라.",
+      "expectations": [
+        { "description": "하드코딩 색상이 있는 파일 수(8개)를 정확히 집계한다", "type": "must_pass" },
+        { "description": "토큰 커버리지 퍼센트를 계산한다", "type": "must_pass" },
+        { "description": "design-tokens.ts 미존재를 감지하고 생성을 권고한다", "type": "must_pass" },
+        { "description": "각 하드코딩 색상에 대해 Tailwind 클래스 대안을 제시한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "src/components/ 하위에 검색/필터 바 패턴이 5개 파일에 반복되고, 테이블 헤더 패턴이 4개 파일에 반복되는 상황이다. /design-audit를 실행해라.",
+      "expectations": [
+        { "description": "3회 이상 반복 패턴을 중복 UI 패턴으로 보고한다", "type": "must_pass" },
+        { "description": "공통 컴포넌트 추출을 제안한다 (예: SearchFilterBar)", "type": "must_pass" },
+        { "description": "개선 우선순위를 P0/P1/P2로 분류한다", "type": "should_pass" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "프로젝트에 하드코딩 색상이 0개이고, design-tokens.ts가 정의되어 있으며, 중복 UI 패턴이 없는 깨끗한 상황이다. /design-audit를 실행해라.",
+      "expectations": [
+        { "description": "토큰 커버리지 100%를 보고한다", "type": "must_pass" },
+        { "description": "결과를 건설적으로 제시한다 (비판이 아닌 긍정적 확인)", "type": "should_pass" }
+      ]
+    }
+  ]
+}

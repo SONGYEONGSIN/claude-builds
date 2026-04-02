@@ -16,6 +16,7 @@ PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 [ -z "$PROJECT_ROOT" ] && exit 0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${SCRIPT_DIR}/_common.sh"
 MSG_BUS="${SCRIPT_DIR}/message-bus.sh"
 [ -f "$MSG_BUS" ] || exit 0
 command -v jq &>/dev/null || exit 0
@@ -36,11 +37,7 @@ check_recent_failure() {
   local log="$1"
   [ -f "$log" ] || return 1
   local mod
-  if [ "$(uname)" = "Darwin" ]; then
-    mod=$(stat -f %m "$log" 2>/dev/null || echo 0)
-  else
-    mod=$(stat -c %Y "$log" 2>/dev/null || echo 0)
-  fi
+  mod=$(get_file_mtime "$log")
   [ $((NOW - mod)) -lt 10 ] && tail -3 "$log" 2>/dev/null | grep -qi "error\|fail" && return 0
   return 1
 }
@@ -51,7 +48,7 @@ DEBATE_AGENTS=""
 DEBATE_DETAIL=""
 
 # 트리거 1: 인증 관련 파일에서 TypeScript 에러
-if check_recent_failure "/tmp/typecheck-hook.log"; then
+if check_recent_failure "$TYPECHECK_LOG"; then
   case "$FILE_PATH" in
     *auth*|*middleware*|*session*|*login*|*signup*|*actions*)
       DEBATE_NEEDED=true
@@ -63,7 +60,7 @@ if check_recent_failure "/tmp/typecheck-hook.log"; then
 fi
 
 # 트리거 2: Server Action 테스트 실패
-if [ "$DEBATE_NEEDED" = false ] && check_recent_failure "/tmp/test-runner-hook.log"; then
+if [ "$DEBATE_NEEDED" = false ] && check_recent_failure "$TEST_RUNNER_LOG"; then
   case "$FILE_PATH" in
     *actions*|*server*|*api*)
       DEBATE_NEEDED=true
