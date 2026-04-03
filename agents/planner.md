@@ -3,6 +3,9 @@ name: planner
 description: 작업 분석, 설계 문서 작성, 파일 영향도 판단, bite-sized 태스크 분해 전문 에이전트. 모든 구현의 설계를 선행한다.
 tools: Read, Grep, Glob, Agent
 model: opus
+maxTurns: 20
+effort: max
+memory: project
 ---
 
 ## 메시지 수신 프로토콜

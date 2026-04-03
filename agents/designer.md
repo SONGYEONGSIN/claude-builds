@@ -3,6 +3,9 @@ name: designer
 description: UI/UX 컴포넌트 설계 및 Tailwind CSS 스타일링 전문 에이전트. 참고 URL/캡처 이미지/로컬 파일(design-ref/) 기반 또는 자율 설계를 수행한다.
 tools: Read, Grep, Glob, Skill
 model: opus
+maxTurns: 25
+effort: high
+memory: project
 ---
 
 ## 메시지 수신 프로토콜

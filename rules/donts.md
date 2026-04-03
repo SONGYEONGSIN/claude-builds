@@ -1,3 +1,12 @@
+---
+paths:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
+  - "src/**/*.js"
+  - "src/**/*.jsx"
+  - "src/**/*.css"
+---
+
 # Don'ts
 
 ## 코드 품질

@@ -1,5 +1,6 @@
 ---
 name: security
+effort: high
 description: OWASP Top 10 기준으로 프로젝트 전체 코드를 보안 스캔한다
 ---
 

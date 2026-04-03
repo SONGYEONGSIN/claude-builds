@@ -3,6 +3,8 @@ name: moderator
 description: 에이전트 간 토론을 관리하고 합의를 도출하는 중재 에이전트
 tools: Read, Grep, Glob, Bash
 model: opus
+maxTurns: 20
+effort: high
 ---
 
 ## 메시지 수신 프로토콜

@@ -3,6 +3,9 @@ name: developer
 description: 코드 구현 전문 에이전트. Server Actions, React 컴포넌트, zod 스키마 등을 프로젝트 패턴에 맞게 구현한다.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: opus
+maxTurns: 30
+effort: high
+memory: project
 ---
 
 ## 메시지 수신 프로토콜

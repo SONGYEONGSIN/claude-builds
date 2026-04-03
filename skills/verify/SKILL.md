@@ -1,5 +1,6 @@
 ---
 name: verify
+effort: medium
 description: 프로젝트 전체 검증 — lint, typecheck, unit test, E2E, 브라우저 콘솔 에러를 순차 실행한다
 ---
 

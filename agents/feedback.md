@@ -3,6 +3,8 @@ name: feedback
 description: 코드 품질 분석 및 개선 제안 에이전트. 복잡도, 가독성, 성능, 규칙 준수 여부를 평가한다.
 tools: Read, Grep, Glob, Bash
 model: opus
+maxTurns: 15
+effort: high
 ---
 
 ## 메시지 수신 프로토콜

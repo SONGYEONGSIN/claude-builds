@@ -1,5 +1,6 @@
 ---
 name: feedback
+effort: high
 description: 최근 변경사항에 대한 코드 품질 분석과 개선 제안을 출력한다
 ---
 

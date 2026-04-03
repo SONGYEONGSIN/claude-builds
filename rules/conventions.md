@@ -1,3 +1,11 @@
+---
+paths:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
+  - "src/**/*.js"
+  - "src/**/*.jsx"
+---
+
 # Conventions
 
 ## 설계 선행 원칙

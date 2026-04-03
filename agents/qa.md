@@ -3,6 +3,9 @@ name: qa
 description: TDD 사이클 주도 및 테스트 전문 에이전트. RED-GREEN-REFACTOR 프로세스를 강제하고, Vitest/Playwright 테스트를 담당한다.
 tools: Read, Grep, Glob, Bash, Edit, Write, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_fill_form, mcp__playwright__browser_console_messages, mcp__playwright__browser_take_screenshot
 model: opus
+maxTurns: 30
+effort: high
+memory: project
 ---
 
 ## 메시지 수신 프로토콜

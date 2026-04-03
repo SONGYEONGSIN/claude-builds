@@ -1,5 +1,6 @@
 ---
 name: metrics
+effort: low
 description: 프로젝트 메트릭 대시보드 — 빌드 성공률, 에러 빈도, 생산성 추이를 보여준다. 사용법: /metrics [today|week|all]
 ---
 

@@ -124,6 +124,11 @@
             "type": "command",
             "command": ".claude/hooks/design-lint.sh",
             "timeout": 5000
+          },
+          {
+            "type": "prompt",
+            "prompt": "수정된 파일에서 하드코딩된 색상(hex, rgb, hsl)을 발견했다면, design-tokens.ts 토큰이나 Tailwind 클래스로 교체할 수 있는지 판단하라. 의도적 사용(SVG fill, 외부 라이브러리 등)이면 무시. 교체 가능하면 구체적 대안을 additionalContext로 반환.",
+            "timeout": 10
           }
         ]
       },
@@ -143,6 +148,41 @@
           {
             "type": "command",
             "command": ".claude/hooks/readme-sync.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/tool-failure-handler.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/notify.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/pre-compact.sh",
             "timeout": 5000
           }
         ]

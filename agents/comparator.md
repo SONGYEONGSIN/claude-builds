@@ -3,6 +3,8 @@ name: comparator
 description: 두 출력을 익명 블라인드 비교하여 품질 우열을 판정하는 에이전트
 tools: Read, Grep, Glob
 model: opus
+maxTurns: 10
+effort: medium
 ---
 
 ## 메시지 수신 프로토콜

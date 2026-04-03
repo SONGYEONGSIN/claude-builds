@@ -3,6 +3,8 @@ name: skill-reviewer
 description: 스킬 품질을 8단계로 검토하고 100점 만점 스코어카드를 출력하는 검증 에이전트
 tools: Read, Grep, Glob
 model: opus
+maxTurns: 10
+effort: medium
 ---
 
 ## 메시지 수신 프로토콜

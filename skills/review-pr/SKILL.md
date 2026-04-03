@@ -1,14 +1,19 @@
 ---
 name: review-pr
 description: GitHub PR을 코드 리뷰한다. 코드 품질, 보안, 테스트 커버리지를 점검한다. 사용법: /review-pr [pr-number]
+effort: high
 ---
 
 GitHub PR #$ARGUMENTS 를 코드 리뷰한다.
 
+## PR 정보
+
+- 요약: !`gh pr view $0 --json title,body,additions,deletions,changedFiles --jq '"[\(.changedFiles) files, +\(.additions)/-\(.deletions)] \(.title)"' 2>/dev/null || echo "(PR 번호를 확인하세요)"`
+- 변경 파일: !`gh pr diff $0 --name-only 2>/dev/null | head -20`
+
 ## 절차
 
-1. `gh pr view $ARGUMENTS --json title,body,files,additions,deletions` 로 PR 정보 확인
-2. `gh pr diff $ARGUMENTS` 로 전체 diff 확인
+1. 위 PR 정보와 `gh pr diff $ARGUMENTS` 전체 diff를 확인
 3. **feedback** 에이전트로 코드 품질 분석 실행
 4. **security** 에이전트로 보안 취약점 점검 실행
 5. 결과를 종합하여 리뷰 리포트 출력

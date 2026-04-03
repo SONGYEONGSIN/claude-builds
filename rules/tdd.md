@@ -1,3 +1,13 @@
+---
+paths:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
+  - "src/**/*.test.*"
+  - "src/**/*.spec.*"
+  - "tests/**/*"
+  - "e2e/**/*"
+---
+
 # TDD (Test-Driven Development)
 
 ## Iron Law

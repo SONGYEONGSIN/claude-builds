@@ -1,3 +1,13 @@
+---
+paths:
+  - "src/**/*.tsx"
+  - "src/**/*.jsx"
+  - "src/**/*.css"
+  - "src/**/*.scss"
+  - "src/lib/design-tokens.ts"
+  - "tailwind.config.*"
+---
+
 # Design System
 
 ## 디자인 토큰
