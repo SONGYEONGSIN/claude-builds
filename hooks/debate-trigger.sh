@@ -12,7 +12,7 @@ case "$FILE_PATH" in
   *) exit 0 ;;
 esac
 
-PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
 [ -z "$PROJECT_ROOT" ] && exit 0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

@@ -10,7 +10,8 @@
 # 기존 uncommitted-warn.sh의 단순 카운트를 대체하여
 # 더 풍부한 세션 리뷰를 제공한다.
 
-PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
+[ -z "$PROJECT_ROOT" ] && exit 0
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "${SCRIPT_DIR}/_common.sh"
 

@@ -20,7 +20,7 @@ if [ -z "$FILE_PATH" ] || [ ! -f "$FILE_PATH" ]; then
   exit 0
 fi
 
-PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
 [ -z "$PROJECT_ROOT" ] && exit 0
 
 PATTERNS_FILE="${PROJECT_ROOT}/.claude/memory/patterns.md"

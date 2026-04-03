@@ -36,7 +36,8 @@ fi
 
 # 2차: 프로젝트 컨텍스트 기반 검증
 # .claude/memory/patterns.md에서 프로젝트별 금지 패턴 로드
-PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
+[ -z "$PROJECT_ROOT" ] && exit 0
 PATTERNS_FILE="${PROJECT_ROOT}/.claude/memory/patterns.md"
 if [ -f "$PATTERNS_FILE" ]; then
   # patterns.md에서 "금지:" 또는 "DENY:" 라인 추출

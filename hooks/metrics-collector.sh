@@ -15,7 +15,7 @@ case "$FILE_PATH" in
 esac
 
 # 프로젝트 루트 탐색
-PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
 if [ -z "$PROJECT_ROOT" ]; then
   exit 0
 fi
