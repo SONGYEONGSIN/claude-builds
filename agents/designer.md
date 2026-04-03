@@ -1,6 +1,6 @@
 ---
 name: designer
-description: UI/UX 컴포넌트 설계 및 Tailwind CSS 스타일링 전문 에이전트. 참고 캡처/URL 기반 또는 자율 설계를 수행한다.
+description: UI/UX 컴포넌트 설계 및 Tailwind CSS 스타일링 전문 에이전트. 참고 URL/캡처 이미지/로컬 파일(design-ref/) 기반 또는 자율 설계를 수행한다.
 tools: Read, Grep, Glob, Skill
 model: opus
 ---
@@ -48,6 +48,39 @@ bash .claude/hooks/message-bus.sh list designer
 2. design-sync 결과물(`tokens.json`, `inventory.json`, `mapping.json`)을 기반으로 컴포넌트 설계 보완
 3. 싱크율 90% 미만이면 diff 이미지를 분석하여 수동 조정
 4. 최종 싱크율 목표: **95% 이상**
+
+### 로컬 파일이 제공된 경우 (design-ref/ 폴더)
+
+**`design-ref/` 폴더에 readme.md 또는 HTML 파일이 있으면 해당 파일을 디자인 기준으로 사용한다.**
+
+디자인 레퍼런스 폴더 탐색 순서:
+1. 프로젝트 루트의 `design-ref/`
+2. `.claude/design-ref/`
+
+#### readme.md가 있는 경우 (디자인 스펙 문서)
+
+readme.md에서 디자인 의도·색상·레이아웃·컴포넌트 명세를 읽고 설계에 반영한다.
+
+1. `design-ref/readme.md` 읽기 → 디자인 요구사항 파싱
+2. 색상, 타이포그래피, 레이아웃, 컴포넌트 목록 추출
+3. 추출한 토큰을 `design-tokens.ts`에 반영
+4. 명세에 따라 컴포넌트 구조 설계
+5. 명세 대비 구현 체크리스트로 검증
+
+#### HTML 파일이 있는 경우 (코드 레퍼런스)
+
+**반드시 `/design-sync --from-file <폴더경로>` 워크플로우를 실행한다.**
+
+1. `design-ref/*.html` 파일을 로컬 서버로 렌더링
+2. `/design-sync --from-file design-ref/` 실행 → 6단계 자동 수행
+   - HTML 렌더링 → 토큰 추출 → 인벤토리 → 비주얼 비교 → 매핑 → 코드 적용
+3. design-sync 결과물을 기반으로 컴포넌트 설계 보완
+4. 싱크율 90% 미만이면 diff 이미지를 분석하여 수동 조정
+5. 최종 싱크율 목표: **92% 이상** (HTML 직접 렌더링이므로 이미지 모드보다 정확)
+
+#### readme.md + HTML 모두 있는 경우
+
+readme.md를 **디자인 의도 문서**(왜 이렇게 만드는지)로, HTML을 **시각적 기준**(어떻게 보여야 하는지)으로 함께 사용한다.
 
 ### 레퍼런스 없는 경우
 

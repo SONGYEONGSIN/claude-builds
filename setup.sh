@@ -49,6 +49,8 @@ echo ""
 
 # .claude 디렉토리 생성
 mkdir -p "$PROJECT_DIR/.claude"/{agents,hooks,rules,skills,session-logs,memory,metrics}
+# 디자인 레퍼런스 폴더 생성
+mkdir -p "$PROJECT_DIR/design-ref"
 # 메시지 버스 디렉토리
 AGENTS_LIST="developer qa security feedback planner designer retrospective grader comparator skill-reviewer moderator"
 mkdir -p "$PROJECT_DIR/.claude/messages"/{archive,debates,broadcast}
