@@ -60,12 +60,7 @@
             "type": "command",
             "command": ".claude/hooks/command-guard.sh",
             "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": ".claude/hooks/smart-guard.sh",
@@ -94,6 +89,11 @@
             "type": "command",
             "command": ".claude/hooks/eslint-fix.sh",
             "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/test-runner.sh",
+            "timeout": 60000
           }
         ]
       },
@@ -105,37 +105,6 @@
             "type": "command",
             "command": ".claude/hooks/typecheck.sh",
             "timeout": 30000
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "if": "Edit(*.ts) | Edit(*.tsx) | Edit(*.js) | Edit(*.jsx) | Write(*.ts) | Write(*.tsx) | Write(*.js) | Write(*.jsx)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/test-runner.sh",
-            "timeout": 60000
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/metrics-collector.sh",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/pattern-check.sh",
-            "timeout": 5000
           }
         ]
       },
@@ -160,14 +129,19 @@
         "hooks": [
           {
             "type": "command",
+            "command": ".claude/hooks/metrics-collector.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/pattern-check.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
             "command": ".claude/hooks/debate-trigger.sh",
             "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": ".claude/hooks/readme-sync.sh",
@@ -218,20 +192,12 @@
             "type": "command",
             "command": ".claude/hooks/uncommitted-warn.sh",
             "timeout": 5000
-          }
-        ]
-      },
-      {
-        "hooks": [
+          },
           {
             "type": "command",
             "command": ".claude/hooks/session-review.sh",
             "timeout": 10000
-          }
-        ]
-      },
-      {
-        "hooks": [
+          },
           {
             "type": "command",
             "command": ".claude/hooks/session-log.sh",

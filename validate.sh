@@ -49,10 +49,22 @@ for cmd in jq git node npx; do
   fi
 done
 
-# 3. 훅 실행 권한
+# 3. 훅 파일 존재 + 실행 권한
 echo ""
-echo "[3/5] 훅 실행 권한"
+echo "[3/5] 훅 파일 검증"
 if [ -d "$CLAUDE_DIR/hooks" ]; then
+  # 필수 훅 파일 목록
+  REQUIRED_HOOKS="_common command-guard smart-guard prettier-format eslint-fix typecheck test-runner metrics-collector pattern-check design-lint debate-trigger message-bus readme-sync session-log session-review uncommitted-warn tool-failure-handler notify pre-compact"
+  HOOK_MISSING=0
+  for hook in $REQUIRED_HOOKS; do
+    if [ ! -f "$CLAUDE_DIR/hooks/${hook}.sh" ]; then
+      err "${hook}.sh 누락"
+      HOOK_MISSING=$((HOOK_MISSING+1))
+    fi
+  done
+  [ "$HOOK_MISSING" = 0 ] && ok "필수 훅 $(echo "$REQUIRED_HOOKS" | wc -w | tr -d ' ')개 모두 존재"
+
+  # 실행 권한 확인
   NON_EXEC=0
   for hook in "$CLAUDE_DIR/hooks/"*.sh; do
     [ -f "$hook" ] || continue
