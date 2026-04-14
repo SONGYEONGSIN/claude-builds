@@ -1,0 +1,9 @@
+{
+  "name": "claude-forge-scripts",
+  "version": "1.0.0",
+  "description": "Claude Forge instinct store — SQLite-backed metrics/events",
+  "private": true,
+  "dependencies": {
+    "better-sqlite3": "^11.0.0"
+  }
+}

@@ -49,9 +49,9 @@ for arg in "$@"; do
 done
 
 if [ "$WITH_ORCHESTRATORS" = true ]; then
-  TOTAL_STEPS=7
+  TOTAL_STEPS=8
 else
-  TOTAL_STEPS=6
+  TOTAL_STEPS=7
 fi
 
 echo "=== claude-builds setup ==="
@@ -115,8 +115,32 @@ else
   echo "  settings.local.json already exists, skipped"
 fi
 
+# Scripts 복사 (instinct store — SQLite 기반 메트릭)
+echo "[6/$TOTAL_STEPS] Scripts (instinct store)..."
+mkdir -p "$PROJECT_DIR/.claude/scripts"
+cp "$SCRIPT_DIR/scripts/store.js"          "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
+cp "$SCRIPT_DIR/scripts/query-instincts.sh" "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
+cp "$SCRIPT_DIR/scripts/package.json"       "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
+chmod +x "$PROJECT_DIR/.claude/scripts/"*.sh 2>/dev/null || true
+
+# better-sqlite3 설치 시도 (실패해도 JSON 폴백으로 동작)
+if [ -f "$PROJECT_DIR/.claude/scripts/package.json" ] && command -v npm &>/dev/null; then
+  echo "  Installing better-sqlite3..."
+  if (cd "$PROJECT_DIR/.claude/scripts" && npm install --silent >/dev/null 2>&1); then
+    echo "  ✓ better-sqlite3 installed → SQLite 메트릭 활성화"
+    # DB 스키마 초기화
+    (cd "$PROJECT_DIR" && node "$PROJECT_DIR/.claude/scripts/store.js" init >/dev/null 2>&1) && \
+      echo "  ✓ store.db 초기화됨" || \
+      echo "  ⚠ store.db 초기화 실패 (첫 훅 실행 시 자동 생성됨)"
+  else
+    echo "  ⚠ better-sqlite3 설치 실패 — JSON 폴백 모드로 동작"
+  fi
+else
+  echo "  ⚠ npm 미설치 — JSON 폴백 모드로 동작"
+fi
+
 # CLAUDE.md 템플릿 복사 (기존 파일이 없을 때만)
-echo "[6/$TOTAL_STEPS] CLAUDE.md + Playwright config..."
+echo "[7/$TOTAL_STEPS] CLAUDE.md + Playwright config..."
 if [ ! -f "$PROJECT_DIR/CLAUDE.md" ]; then
   sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
     "$SCRIPT_DIR/templates/CLAUDE.md.template" \
@@ -149,7 +173,7 @@ chmod +x "$PROJECT_DIR/.claude/validate.sh"
 
 # Orchestrator 설정 (선택)
 if [ "$WITH_ORCHESTRATORS" = true ]; then
-  echo "[7/$TOTAL_STEPS] Orchestrators..."
+  echo "[8/$TOTAL_STEPS] Orchestrators..."
 
   # Claude Squad config
   if command -v cs &>/dev/null; then
@@ -192,8 +216,9 @@ echo "  - Agents:  $(ls "$PROJECT_DIR/.claude/agents/" | wc -l | tr -d ' ')개"
 echo "  - Hooks:   $(ls "$PROJECT_DIR/.claude/hooks/" | wc -l | tr -d ' ')개"
 echo "  - Skills:  $(ls "$PROJECT_DIR/.claude/skills/" | wc -l | tr -d ' ')개"
 echo "  - Rules:   $(ls "$PROJECT_DIR/.claude/rules/" | wc -l | tr -d ' ')개"
+echo "  - Scripts: .claude/scripts/ (instinct store — store.js + query-instincts.sh)"
 echo "  - Memory:  .claude/memory/ (학습 패턴 저장)"
-echo "  - Metrics: .claude/metrics/ (자동 메트릭 수집)"
+echo "  - Metrics: .claude/metrics/ (JSON) + .claude/store.db (SQLite)"
 echo "  - Messages: .claude/messages/ (에이전트 간 통신)"
 [ -f "$PROJECT_DIR/playwright.config.ts" ] && echo "  - Playwright: playwright.config.ts (HTML 리포트)"
 [ -f "$PROJECT_DIR/.worktreeinclude" ] && echo "  - Worktree:   .worktreeinclude (.env 자동 복사)"

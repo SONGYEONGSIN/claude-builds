@@ -29,6 +29,12 @@ else
   echo "{\"date\": \"${DATE}\", \"events\": [${EVENT}]}" > "$METRICS_FILE"
 fi
 
+# SQLite 이중 기록 (best-effort)
+STORE_JS="${PROJECT_ROOT}/.claude/scripts/store.js"
+if [ -f "$STORE_JS" ] && command -v node &>/dev/null; then
+  echo "$EVENT" | node "$STORE_JS" append-failure 2>/dev/null || true
+fi
+
 # 복구 힌트 제공
 HINT=""
 case "$ERROR" in

@@ -95,18 +95,17 @@ fi
 # 상대 경로로 변환
 REL_PATH="${FILE_PATH#${PROJECT_ROOT}/}"
 
-# jq로 이벤트 추가
+# jq로 이벤트 추가 (JSON 원본 + SQLite 이중 기록)
 if command -v jq &>/dev/null; then
-  TEMP_FILE=$(mktemp)
-  trap "rm -f \"$TEMP_FILE\"" EXIT
-  jq --arg ts "$TIMESTAMP" \
+  EVENT_JSON=$(jq -n \
+     --arg ts "$TIMESTAMP" \
      --arg tool "$TOOL_NAME" \
      --arg file "$REL_PATH" \
      --arg pr "$PRETTIER_RESULT" \
      --arg es "$ESLINT_RESULT" \
      --arg tc "$TYPECHECK_RESULT" \
      --arg te "$TEST_RESULT" \
-     '.events += [{
+     '{
        timestamp: $ts,
        tool: $tool,
        file: $file,
@@ -116,7 +115,18 @@ if command -v jq &>/dev/null; then
          typecheck: $tc,
          test: $te
        }
-     }]' "$METRICS_FILE" > "$TEMP_FILE" 2>/dev/null && mv "$TEMP_FILE" "$METRICS_FILE"
+     }')
+
+  # 1) JSON 파일 기록 (기존 경로, 하위 호환)
+  TEMP_FILE=$(mktemp)
+  trap "rm -f \"$TEMP_FILE\"" EXIT
+  jq --argjson evt "$EVENT_JSON" '.events += [$evt]' "$METRICS_FILE" > "$TEMP_FILE" 2>/dev/null && mv "$TEMP_FILE" "$METRICS_FILE"
+
+  # 2) SQLite 기록 (best-effort, 실패해도 JSON은 유지)
+  STORE_JS="${PROJECT_ROOT}/.claude/scripts/store.js"
+  if [ -f "$STORE_JS" ] && command -v node &>/dev/null; then
+    echo "$EVENT_JSON" | node "$STORE_JS" append-event 2>/dev/null || true
+  fi
 fi
 
 exit 0

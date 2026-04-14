@@ -26,9 +26,17 @@ echo ""
 # 1. .claude 디렉토리 구조
 echo "[1/5] .claude 디렉토리 구조"
 [ -d "$CLAUDE_DIR" ] && ok ".claude/ 존재" || { err ".claude/ 없음 — setup.sh 실행 필요"; exit 1; }
-for sub in agents hooks rules skills messages; do
+for sub in agents hooks rules skills messages scripts; do
   [ -d "$CLAUDE_DIR/$sub" ] && ok "$sub/ 존재" || err "$sub/ 없음"
 done
+# Instinct store 확인 (선택적)
+if [ -f "$CLAUDE_DIR/scripts/store.js" ]; then
+  if [ -d "$CLAUDE_DIR/scripts/node_modules/better-sqlite3" ]; then
+    ok "scripts/store.js + better-sqlite3 설치됨 (SQLite 메트릭 활성)"
+  else
+    warn "scripts/store.js 있으나 better-sqlite3 미설치 — JSON 폴백 모드"
+  fi
+fi
 
 # 2. 필수 의존 도구
 echo ""

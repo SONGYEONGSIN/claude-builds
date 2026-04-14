@@ -38,11 +38,34 @@ else
   echo "✓ 모든 변경이 커밋됨"
 fi
 
-# 2. 오늘의 메트릭 확인
+# 2. 오늘의 메트릭 확인 (SQLite 우선, JSON 폴백)
 TODAY=$(date +%Y-%m-%d)
+STORE_DB="${PROJECT_ROOT}/.claude/store.db"
+STORE_JS="${PROJECT_ROOT}/.claude/scripts/store.js"
 METRICS_FILE="${PROJECT_ROOT}/.claude/metrics/daily-${TODAY}.json"
+METRICS_PRINTED=0
 
-if [ -f "$METRICS_FILE" ] && command -v jq &>/dev/null; then
+# SQLite 경로
+if [ -f "$STORE_DB" ] && [ -f "$STORE_JS" ] && command -v node &>/dev/null && command -v jq &>/dev/null; then
+  TODAY_JSON=$(node "$STORE_JS" query today 2>/dev/null)
+  if [ -n "$TODAY_JSON" ]; then
+    TOTAL=$(echo "$TODAY_JSON" | jq -r '.[0].total // 0' 2>/dev/null || echo "0")
+    if [ "$TOTAL" -gt 0 ] 2>/dev/null; then
+      PASS=$(echo "$TODAY_JSON" | jq -r '.[0].all_pass // 0')
+      TS_FAIL=$(echo "$TODAY_JSON" | jq -r '.[0].ts_fail // 0')
+      TEST_FAIL=$(echo "$TODAY_JSON" | jq -r '.[0].test_fail // 0')
+      echo ""
+      echo "📊 오늘의 메트릭 (${TOTAL} events, SQLite):"
+      echo "  - 전체 통과: ${PASS}/${TOTAL}"
+      [ "$TS_FAIL" -gt 0 ] && echo "  - TypeScript 에러: ${TS_FAIL}회"
+      [ "$TEST_FAIL" -gt 0 ] && echo "  - 테스트 실패: ${TEST_FAIL}회"
+      METRICS_PRINTED=1
+    fi
+  fi
+fi
+
+# JSON 폴백 (SQLite 데이터 없거나 실패 시)
+if [ "$METRICS_PRINTED" = "0" ] && [ -f "$METRICS_FILE" ] && command -v jq &>/dev/null; then
   TOTAL_EVENTS=$(jq '.events | length' "$METRICS_FILE" 2>/dev/null || echo "0")
 
   if [ "$TOTAL_EVENTS" -gt 0 ] 2>/dev/null; then
