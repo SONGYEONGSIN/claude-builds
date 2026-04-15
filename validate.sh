@@ -81,7 +81,7 @@ echo ""
 echo "[4/5] agents.json 일관성"
 AGENTS_JSON="$CLAUDE_DIR/agents.json"
 if [ -f "$AGENTS_JSON" ]; then
-  EXPECTED=$(jq -r '.agents[]' "$AGENTS_JSON" 2>/dev/null)
+  EXPECTED=$(jq -r '.agents[]' "$AGENTS_JSON" 2>/dev/null | tr -d '\r')
   if [ -z "$EXPECTED" ]; then
     err "agents.json 파싱 실패"
   else
