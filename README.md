@@ -226,7 +226,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `design-audit` | `/design-audit` | 디자인 시스템 준수 점검 — 색상 토큰 커버리지, 중복 패턴 감지 |
 | `verify` | `/verify` | lint → typecheck → test → e2e 검증 |
 | `worktree` | `/worktree [create\|list\|remove]` | Git worktree 격리 작업 환경 생성/관리 |
-| `pair` | (문서 기반) | Builder+Validator 페어 프로그래밍 — fresh-context 검증 루프 |
+| `pair` | `/pair "task"` | Builder+Validator 페어 — developer → validator 루프 자동 오케스트레이션 (최대 3 iteration, 교착 시 moderator 소환) |
 
 ### Hooks (19개)
 

@@ -33,10 +33,12 @@ claude-builds 개선 로드맵. 커뮤니티 리서치(GitHub 오픈소스 Claud
 - **모드 전환**: `export CLAUDE_TDD_ENFORCE=strict` (차단) / `off` (비활성화) / 기본값 `warn`
 
 ### 커뮤니티 2순위: Builder/Validator Pair Mode ✅
-- [x] **Validator 에이전트 + Pair 스킬** — `agents/validator.md` (Edit/Write 차단, Bash 허용), `skills/pair/SKILL.md` (Builder+Validator 워크플로우), `agents/developer.md`에 pair 완료 프로토콜 추가
+- [x] **Validator 에이전트 + Pair 스킬 (L1)** — `agents/validator.md` (Edit/Write 차단, Bash 허용), `agents/developer.md`에 pair 완료 프로토콜 추가
+- [x] **L2 자동 오케스트레이션** — `skills/pair/SKILL.md`를 실행 가능 스킬로 재작성. `/pair "task"` 한 번 실행으로 Agent 도구를 통한 developer → validator 루프 자동 실행, 3회 반려 시 moderator 소환
 - **출처**: [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery)
 - **역할 구분**: comparator(A/B 비교), feedback(품질 리뷰), validator(머지 준비 binary 판정) — 중복 없음
-- **사용**: Builder 완료 시 `pair-review-request` 메시지 → Validator 7단계 검증 → approved/needs-revision (최대 3 iteration, 교착 시 moderator 자동 소환)
+- **사용 (L2)**: `/pair "작업 설명"` — 단일 세션 내 Builder+Validator+(moderator) 자동 오케스트레이션
+- **사용 (L1, 하위 호환)**: Claude Squad에서 수동으로 developer + validator 세션 분리 운영
 
 ---
 
