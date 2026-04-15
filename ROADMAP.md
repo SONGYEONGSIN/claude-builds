@@ -21,18 +21,14 @@ claude-builds 개선 로드맵. 커뮤니티 리서치(GitHub 오픈소스 Claud
 - [x] **성숙화 P1~P3** ([`309ca09`](https://github.com/SONGYEONGSIN/claude-builds/commit/309ca09)) — 마이그레이션 시스템, daily_summary 집계, cleanup/aggregate/export/migrate, pragma 최적화, 신규 쿼리(weekly-trend/failure-trend/health)
 - **출처**: [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code)
 
+### 커뮤니티 3순위: 에이전트 실시간 관측 스트림 ✅
+- [x] **JSONL 스트림 + 포맷터** — `scripts/watch-events.sh` + `scripts/events-tail.js`, 훅 2개 JSONL append 추가, session-review.sh에 10MB 회전 로직
+- **출처**: [disler/claude-code-hooks-multi-agent-observability](https://github.com/disler/claude-code-hooks-multi-agent-observability)
+- **사용**: `bash .claude/scripts/watch-events.sh [--errors-only] [--file <pattern>] [--raw]`
+
 ---
 
 ## 미완 (우선순위 순)
-
-### 🟢 커뮤니티 3순위: 에이전트 실시간 관측 스트림 — **권장 다음 작업**
-- **출처**: [disler/claude-code-hooks-multi-agent-observability](https://github.com/disler/claude-code-hooks-multi-agent-observability)
-- **핵심**: 훅 이벤트를 `.claude/events.jsonl`에 append → `tail -f | jq`로 실시간 모니터링
-- **통합 지점**:
-  - 신규: `scripts/watch-events.sh` + `scripts/events-tail.js`
-  - 수정: `hooks/metrics-collector.sh`, `hooks/tool-failure-handler.sh`에 JSONL append 1줄
-- **예상 공수**: 1~2시간 (SQLite store가 이미 성숙해서 얇게 얹기만 하면 됨)
-- **효용**: `/orchestrate` 병렬 실행 중 stuck 에이전트 즉시 감지
 
 ### 🟡 커뮤니티 2순위: Builder/Validator Pair Mode
 - **출처**: [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery)

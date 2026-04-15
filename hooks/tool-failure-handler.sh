@@ -35,6 +35,10 @@ if [ -f "$STORE_JS" ] && command -v node &>/dev/null; then
   echo "$EVENT" | node "$STORE_JS" append-failure 2>/dev/null || true
 fi
 
+# events.jsonl 실시간 스트림 기록 (observability)
+EVENTS_FILE="${PROJECT_ROOT}/.claude/events.jsonl"
+echo "$EVENT" | jq -c '. + {status: "error", ts: .timestamp}' >> "$EVENTS_FILE" 2>/dev/null || true
+
 # 복구 힌트 제공
 HINT=""
 case "$ERROR" in

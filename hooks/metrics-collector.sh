@@ -127,6 +127,17 @@ if command -v jq &>/dev/null; then
   if [ -f "$STORE_JS" ] && command -v node &>/dev/null; then
     echo "$EVENT_JSON" | node "$STORE_JS" append-event 2>/dev/null || true
   fi
+
+  # 3) events.jsonl 실시간 스트림 기록 (observability, best-effort)
+  EVENTS_FILE="${PROJECT_ROOT}/.claude/events.jsonl"
+  if [ "$PRETTIER_RESULT" = "pass" ] && [ "$ESLINT_RESULT" = "pass" ] && [ "$TYPECHECK_RESULT" = "pass" ] && [ "$TEST_RESULT" = "pass" ]; then
+    STREAM_STATUS="all_pass"
+  elif echo "${PRETTIER_RESULT} ${ESLINT_RESULT} ${TYPECHECK_RESULT} ${TEST_RESULT}" | grep -q "fail"; then
+    STREAM_STATUS="fail"
+  else
+    STREAM_STATUS="partial"
+  fi
+  echo "$EVENT_JSON" | jq -c --arg s "$STREAM_STATUS" '. + {type: "tool_result", status: $s, ts: .timestamp}' >> "$EVENTS_FILE" 2>/dev/null || true
 fi
 
 exit 0

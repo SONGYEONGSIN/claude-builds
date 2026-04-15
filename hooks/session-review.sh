@@ -114,6 +114,12 @@ if [ -f "$MSG_BUS" ] && [ "$UNCOMMITTED" -gt 5 ] 2>/dev/null; then
     "커밋되지 않은 변경이 ${UNCOMMITTED}개 파일에 있습니다. 다음 세션에서 코드 리뷰를 권장합니다." >/dev/null 2>&1 || true
 fi
 
+# 6. events.jsonl 회전 (10MB 초과 시 최근 10000라인만 보관)
+EVENTS_FILE="${PROJECT_ROOT}/.claude/events.jsonl"
+if [ -f "$EVENTS_FILE" ]; then
+  truncate_log_file "$EVENTS_FILE" 10485760 10000
+fi
+
 echo ""
 echo "──────────────────────────────────────"
 exit 0

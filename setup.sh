@@ -115,12 +115,12 @@ else
   echo "  settings.local.json already exists, skipped"
 fi
 
-# Scripts 복사 (instinct store — SQLite 기반 메트릭)
-echo "[6/$TOTAL_STEPS] Scripts (instinct store)..."
+# Scripts 복사 (instinct store + observability)
+echo "[6/$TOTAL_STEPS] Scripts (instinct store + observability)..."
 mkdir -p "$PROJECT_DIR/.claude/scripts"
-cp "$SCRIPT_DIR/scripts/store.js"          "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
-cp "$SCRIPT_DIR/scripts/query-instincts.sh" "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
-cp "$SCRIPT_DIR/scripts/package.json"       "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
+cp "$SCRIPT_DIR/scripts/"*.js   "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
+cp "$SCRIPT_DIR/scripts/"*.sh   "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
+cp "$SCRIPT_DIR/scripts/"*.json "$PROJECT_DIR/.claude/scripts/" 2>/dev/null || true
 chmod +x "$PROJECT_DIR/.claude/scripts/"*.sh 2>/dev/null || true
 
 # better-sqlite3 설치 시도 (실패해도 JSON 폴백으로 동작)
@@ -216,7 +216,7 @@ echo "  - Agents:  $(ls "$PROJECT_DIR/.claude/agents/" | wc -l | tr -d ' ')개"
 echo "  - Hooks:   $(ls "$PROJECT_DIR/.claude/hooks/" | wc -l | tr -d ' ')개"
 echo "  - Skills:  $(ls "$PROJECT_DIR/.claude/skills/" | wc -l | tr -d ' ')개"
 echo "  - Rules:   $(ls "$PROJECT_DIR/.claude/rules/" | wc -l | tr -d ' ')개"
-echo "  - Scripts: .claude/scripts/ (instinct store — store.js + query-instincts.sh)"
+echo "  - Scripts: .claude/scripts/ (instinct store + watch-events.sh 실시간 관측)"
 echo "  - Memory:  .claude/memory/ (학습 패턴 저장)"
 echo "  - Metrics: .claude/metrics/ (JSON) + .claude/store.db (SQLite)"
 echo "  - Messages: .claude/messages/ (에이전트 간 통신)"
