@@ -1,0 +1,80 @@
+# ROADMAP
+
+claude-builds 개선 로드맵. 커뮤니티 리서치(GitHub 오픈소스 Claude Code 레포)와 내부 감사 결과를 기반으로 한 작업 큐.
+
+**머신 간 동기화**: Claude Code 메모리는 로컬 저장이라 회사↔집 공유가 안 됨. 이 파일이 진행 상황의 **단일 진실의 원천(single source of truth)**. 작업 완료 시 체크박스 갱신 + 커밋.
+
+---
+
+## 완료
+
+### 디자인 시스템
+- [x] **DESIGN.md 9섹션 포맷 지원** ([`0871d9b`](https://github.com/SONGYEONGSIN/claude-builds/commit/0871d9b)) — VoltAgent/Google Stitch 표준 통합
+- [x] **README 정합성** ([`cb29c77`](https://github.com/SONGYEONGSIN/claude-builds/commit/cb29c77)) — 훅 수 15→18, Design System 4중 레이어 확장
+
+### 인프라
+- [x] **P1 정비** ([`ab2b130`](https://github.com/SONGYEONGSIN/claude-builds/commit/ab2b130)) — `_common.sh::truncate_log_file()` DRY화, `agents.json` 단일 소스, `validate.sh` 5단계 검증
+- [x] **settings 매처 통합** ([`e85dffc`](https://github.com/SONGYEONGSIN/claude-builds/commit/e85dffc)) — PostToolUse 9→5블록, Stop 3→1블록
+
+### 커뮤니티 1순위: SQLite Instinct Store ✅
+- [x] **초벌 도입** ([`fb54ece`](https://github.com/SONGYEONGSIN/claude-builds/commit/fb54ece)) — `scripts/store.js` + better-sqlite3, dual-write 패턴
+- [x] **성숙화 P1~P3** ([`309ca09`](https://github.com/SONGYEONGSIN/claude-builds/commit/309ca09)) — 마이그레이션 시스템, daily_summary 집계, cleanup/aggregate/export/migrate, pragma 최적화, 신규 쿼리(weekly-trend/failure-trend/health)
+- **출처**: [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code)
+
+---
+
+## 미완 (우선순위 순)
+
+### 🟢 커뮤니티 3순위: 에이전트 실시간 관측 스트림 — **권장 다음 작업**
+- **출처**: [disler/claude-code-hooks-multi-agent-observability](https://github.com/disler/claude-code-hooks-multi-agent-observability)
+- **핵심**: 훅 이벤트를 `.claude/events.jsonl`에 append → `tail -f | jq`로 실시간 모니터링
+- **통합 지점**:
+  - 신규: `scripts/watch-events.sh` + `scripts/events-tail.js`
+  - 수정: `hooks/metrics-collector.sh`, `hooks/tool-failure-handler.sh`에 JSONL append 1줄
+- **예상 공수**: 1~2시간 (SQLite store가 이미 성숙해서 얇게 얹기만 하면 됨)
+- **효용**: `/orchestrate` 병렬 실행 중 stuck 에이전트 즉시 감지
+
+### 🟡 커뮤니티 2순위: Builder/Validator Pair Mode
+- **출처**: [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery)
+- **핵심**: 모든 팀 작업이 **Builder(구현) + Validator(검증 전용, Edit/Write 권한 없음)** 쌍으로 자동 스폰
+- **통합 지점**: `skills/orchestrate/`에 `pair_mode: builder+validator` 플래그 추가, 관련 에이전트 설정
+- **예상 공수**: 1일 (대규모 — orchestrate 구조 변경)
+- **위험**: 기존 debate 패턴과 경계 설정 필요
+
+### ⚠️ 커뮤니티 4순위: TDD 강제화 훅
+- **출처**: [obra/superpowers](https://github.com/obra/superpowers) (Anthropic 마켓플레이스)
+- **핵심**: 실패 테스트 없이 구현 코드 작성 시 **PreToolUse 훅이 Edit 자체를 revert**
+- **통합 지점**: 신규 `hooks/tdd-enforce.sh` (PreToolUse, Write|Edit 매처)
+- **예상 공수**: 반나절~1일
+- **주의**: 파괴적 동작 — **경고 모드로 시작, 신뢰 쌓인 뒤 차단으로 승격**
+
+### 🔵 P2 전략 공백: 토큰/비용 예산 프레임워크
+- **배경**: `/orchestrate`로 11개 에이전트 병렬 실행 시 무제한 과금 가능
+- **통합 지점**: 신규 `hooks/budget-guard.sh` + `.claude/budget.json` + `/metrics`에 비용 차트
+- **예상 공수**: 반나절
+- **우선순위**: 실제 과금 사례 발생 시 착수
+
+---
+
+## 작업 재개 절차 (머신 간)
+
+```bash
+# 1) 최신 상태 확보
+cd claude-builds && git pull origin main
+
+# 2) ROADMAP.md 확인 → 다음 미완 항목 선택
+cat ROADMAP.md
+
+# 3) 작업 시작 — Claude Code 세션에서 "ROADMAP N순위 진행" 같이 지시
+```
+
+## 갱신 규칙
+- 작업 **시작** 시: 해당 항목 앞에 "🚧 진행중" 표시 + 커밋
+- 작업 **완료** 시: `[ ]` → `[x]`, "미완 → 완료" 섹션 이동, 커밋 해시 추가
+- 새 아이디어 발생 시: "미완" 섹션에 우선순위와 함께 추가
+- **ROADMAP 갱신도 해당 작업 커밋과 함께 묶음** (별도 커밋 X)
+
+## 참고 자료
+- 내부 감사 원본: 세션 대화 (2026-04-14)
+- 커뮤니티 리서치 원본: 세션 대화 (2026-04-14)
+- 커뮤니티 1순위 확장 근거: openclaw-obs, claude-code-analytics, Capstan, agentic-qe (커밋 `309ca09` 메시지 참조)
