@@ -40,6 +40,7 @@ cp orchestrators/claude-squad/config.template.json ~/.claude-squad/config.json
 | comparator | agents/comparator.md | 블라인드 A/B 비교 | Read, Grep, Glob |
 | skill-reviewer | agents/skill-reviewer.md | 스킬 품질 8단계 검토 | Read, Grep, Glob |
 | moderator | agents/moderator.md | 에이전트 간 토론 중재 | Read, Grep, Glob, Bash |
+| validator | agents/validator.md | Pair mode 품질 게이트 — fresh-context 검증 | Read, Grep, Glob, Bash |
 
 ### 사용법
 
