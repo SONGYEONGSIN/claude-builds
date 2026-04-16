@@ -29,6 +29,7 @@ paths:
 - `useEffect` 내에서 데이터 fetch 금지 (Server Action 또는 Server Component 사용)
 - 인라인 스타일 금지 (Tailwind CSS 클래스 사용)
 - 컴포넌트에서 하드코딩 색상 금지 (`#xxx`, `rgb()`, `hsl()` → 토큰 또는 Tailwind 사용)
+- 폴백 로직 금지 — graceful degradation, backwards-compatibility shim 작성하지 않는다. 실패하면 근본 원인을 수정한다. (예외: 훅의 `|| true`는 비차단 설계이므로 허용)
 
 ## 완료 기준
 

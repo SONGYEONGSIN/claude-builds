@@ -96,7 +96,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 │  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                    Skills (18개) — /명령어                     │   │
+│  │                    Skills (19개) — /명령어                     │   │
 │  │                                                               │   │
 │  │  ┌─ 개발 ────────┐  ┌─ 품질 ────────┐  ┌─ 운영 ────────┐   │   │
 │  │  │ /commit        │  │ /verify       │  │ /status       │   │   │
@@ -206,7 +206,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `skill-reviewer` | 스킬 품질 8단계 검토, 100점 스코어카드 | opus |
 | `validator` | Pair mode 품질 게이트 — Builder 작업을 fresh-context로 검증, binary 판정(approved/needs-revision) | opus |
 
-### Skills (18개)
+### Skills (19개)
 
 | 스킬 | 호출 | 설명 |
 |------|------|------|
@@ -228,6 +228,7 @@ bash /path/to/claude-builds/setup.sh --with-orchestrators
 | `worktree` | `/worktree [create\|list\|remove]` | Git worktree 격리 작업 환경 생성/관리 |
 | `pair` | `/pair "task"` | Builder+Validator 페어 — developer → validator 루프 자동 오케스트레이션 (최대 3 iteration, 교착 시 moderator 소환) |
 | `evolve` | `/evolve <skill>` | 스킬 자동 개선 — eval 결과 분석 → 후보 생성 → 5개 제약 게이트 → A/B 블라인드 비교 (Hermes Agent 패턴) |
+| `release` | `/release [version]` | 릴리즈 — conventional commits에서 semver 자동 판단, CHANGELOG.md 갱신, git tag + push (Chops 패턴) |
 
 ### Hooks (22개)
 
@@ -462,7 +463,7 @@ claude-builds/
 │   └── settings.template.json     # 권한, 훅, env, MCP 서버 템플릿
 ├── agents/                        # 12개 전문 에이전트
 ├── hooks/                         # 22개 자동화 훅
-├── skills/                        # 18개 CLI 스킬
+├── skills/                        # 19개 CLI 스킬
 ├── rules/                         # 6개 공통 규칙
 ├── docs/
 │   └── architecture.png           # 아키텍처 다이어그램
