@@ -705,6 +705,21 @@ rm -rf ~/.claude-squad     # 전역 — 다른 프로젝트와 공유 시 주의
 
 `safe_copy`로 생성된 `.bak.*` 파일은 사용자 수정본 백업이므로 제거 전 내용 확인 권장.
 
+## 설계 철학 출처
+
+claude-builds의 핵심 원칙은 다음 패턴을 **mechanical enforcement** 형태로 통합한 것이다 — 가이드라인이 아닌 hook 차단 + eval 게이트로 강제:
+
+- **Surgical change / Goal-driven execution**: [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (Andrej Karpathy의 LLM 코딩 함정 관찰 기반 4 원칙)
+- **TDD Iron Law**: [obra/superpowers](https://github.com/obra/superpowers) (warn → strict 진화 모델)
+- **Self-evolution + Memory fencing + Error classifier**: [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)
+- **Pair mode (Builder/Validator)**: [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery)
+- **SQLite instinct store**: [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code)
+- **Observability stream**: [disler/claude-code-hooks-multi-agent-observability](https://github.com/disler/claude-code-hooks-multi-agent-observability)
+- **Release skill (semver + CHANGELOG)**: [Shpigford/chops](https://github.com/Shpigford/chops)
+- **DESIGN.md 9섹션 포맷**: [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md)
+
+자세한 매핑(어떤 패턴이 어떤 hook/agent/skill로 구현되었는지)은 `CHANGELOG.md` 1.0.0 출처 섹션 참조.
+
 ## 라이선스
 
 MIT
