@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### 추가
+- **외부 sync로 누적된 agents 12 + skills 23 import** — `core/agents/` 12 (api-architect, architecture-reviewer, devops-engineer, frontend-design-specialist, performance-optimizer, product-strategist, project-planner, security-specialist, supabase-db-specialist, technical-writer, test-writer, ux-researcher), `core/skills/` 23 (agent-browser, b2b-landing, codebase-analyzer, debate, dependency-manager, deploy-safety-guard, ebook-writing, error-path-analysis, idea, korean-privacy-terms, orchestrate, performance-checker, product-thinking, remotion-studio, retro, security-audit, seo-master, site-auditor, start-docs, sync-claude-md, sync-workflow, web-design-guidelines, webapp-testing). 156 파일, +36685.
 - **`session-memory-sync.sh` Stop hook** — 세션 종료 시 `~/.claude/` 메모리를 `claude-memory` orphan branch에 background 자동 push. 머신 간(집↔회사) 동기화 자동화 — `sync-memory.sh push`를 수동 호출할 일 줄임.
   - rate limit 30분 (network 부하 방지) — `.claude/.last-memory-sync` 타임스탬프 추적
   - opt-out: `export VIBE_FLOW_AUTO_MEMORY_SYNC=0`
@@ -10,6 +11,9 @@
   - sync-memory.sh가 chmod +x 안 된 환경 대응(`-f` 검사)
   - events.jsonl `type=memory_sync_triggered` 1줄 기록
   - `<memory-context>` wrapper 안내 — 회사 머신은 `bash sync-memory.sh pull --force`로 받기
+
+### 수정
+- **`sync-memory.sh` chmod +x** — 실행 권한 누락 fix (이제 직접 호출 가능, 이전엔 `bash sync-memory.sh ...` 필수)
 
 ## [1.6.0] - 2026-05-05 — sleep-build (자율 사이클) + character system 정리
 
