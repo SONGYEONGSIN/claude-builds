@@ -259,6 +259,11 @@
             "type": "command",
             "command": ".claude/hooks/session-log.sh",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-memory-sync.sh",
+            "timeout": 5000
           }
         ]
       }
