@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### 추가
+- **`session-memory-sync.sh` Stop hook** — 세션 종료 시 `~/.claude/` 메모리를 `claude-memory` orphan branch에 background 자동 push. 머신 간(집↔회사) 동기화 자동화 — `sync-memory.sh push`를 수동 호출할 일 줄임.
+  - rate limit 30분 (network 부하 방지) — `.claude/.last-memory-sync` 타임스탬프 추적
+  - opt-out: `export VIBE_FLOW_AUTO_MEMORY_SYNC=0`
+  - background `nohup ... &` 실행 — 사용자 다음 입력 차단 X
+  - sync-memory.sh가 chmod +x 안 된 환경 대응(`-f` 검사)
+  - events.jsonl `type=memory_sync_triggered` 1줄 기록
+  - `<memory-context>` wrapper 안내 — 회사 머신은 `bash sync-memory.sh pull --force`로 받기
+
 ## [1.6.0] - 2026-05-05 — sleep-build (자율 사이클) + character system 정리
 
 vibe-flow v2 첫 사이클. **maker가 자는 시간을 가치로 만든다** — 야간 자율 사이클 토대 (`/sleep-build`) + Phase 1.1 dogfooding 강화.
