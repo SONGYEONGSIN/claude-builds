@@ -4,9 +4,9 @@ description: 자율/복잡 워크플로우는 5분 dogfooding이 1시간 plan보
 type: feedback
 originSessionId: f4ab8511-b7e1-4a20-91fe-9b3518ab81ac
 ---
-복잡한 자율/오케스트레이션 워크플로우(예: `/sleep-build`)는 plan 단계만으로는 운영 결함이 안 보인다. **첫 dogfooding 사이클이 plan 1시간보다 결정적**이다.
+복잡한 자율/오케스트레이션 워크플로우(예: `/auto-build`)는 plan 단계만으로는 운영 결함이 안 보인다. **첫 dogfooding 사이클이 plan 1시간보다 결정적**이다.
 
-**Why:** vibe-flow PR #30 (sleep-build Phase 1) 머지 직후 dashboard PR #11 dogfooding (5분 watching)에서 4개 high/medium design gap (F1-F5) 즉시 발굴. plan 단계의 planner agent 분석 + 사용자 합의 게이트로도 못 잡은 결함들이 실행 5분에 드러남:
+**Why:** vibe-flow PR #30 (auto-build Phase 1) 머지 직후 dashboard PR #11 dogfooding (5분 watching)에서 4개 high/medium design gap (F1-F5) 즉시 발굴. plan 단계의 planner agent 분석 + 사용자 합의 게이트로도 못 잡은 결함들이 실행 5분에 드러남:
 - F1 deployment fail-fast 부재
 - F3 brainstorm clarification 무한 대기 위험
 - F4 inline 등급 P2 skip 누락
@@ -20,4 +20,4 @@ originSessionId: f4ab8511-b7e1-4a20-91fe-9b3518ab81ac
 - 발견된 finding은 별도 issue + 후속 PR로 분리 — 첫 PR을 oversize 시키지 말 것
 - 단순 추가 기능(작은 helper, 작은 hook)은 dogfooding 의무 X — 자율/복잡 영역 한정 적용
 
-이 원칙은 sleep-build뿐 아니라 향후 `/pair`, `/discuss`, 자율 retrospective 등 모든 오케스트레이션 워크플로우에 적용.
+이 원칙은 auto-build뿐 아니라 향후 `/pair`, `/discuss`, 자율 retrospective 등 모든 오케스트레이션 워크플로우에 적용.

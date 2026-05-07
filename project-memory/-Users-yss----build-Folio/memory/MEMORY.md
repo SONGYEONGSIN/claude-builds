@@ -7,3 +7,5 @@
 - [SignUp + 비밀번호 강도/일치 + Clock 패턴](feedback_signup_password_pattern.md) — zod regex + 실시간 인디케이터 + SSR-safe 시계 + 다중 useActionState + e2e selector 함정
 - [SSO + remember 14일 + 비밀번호 찾기 패턴](feedback_login_extras_pattern.md) — Supabase OAuth + cookie maxAge override + reset 흐름 + /auth/callback + enumeration 방지 + 임시 session 가드
 - [Dashboard dynamic [slug] + 4 패턴 demo 패턴](feedback_dashboard_pages_pattern.md) — findSidebarMeta + 4 패턴 분류 + layout.tsx 추출 + Sidebar Link/active
+- [chrome rebrand: PIVOT → OPS Console](project_pivot_to_ops_console.md) — 2026-05-08, >_ 터미널 프롬프트 로고
+- [한자 시각 표기 절대 금지](feedback_no_hanja.md) — Folio UI 어디에도 한자(漢字) 사용 금지, 한국어는 한글로만

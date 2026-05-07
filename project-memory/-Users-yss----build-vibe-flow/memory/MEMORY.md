@@ -3,5 +3,5 @@
 - [gh pr edit body 우회](feedback_gh_pr_edit_body.md) — projects-classic GraphQL 에러 시 `gh api -X PATCH` REST 경로로
 - [macOS NFD/NFC 한글 경로](feedback_macos_nfd_nfc.md) — git/pwd는 NFD, 파일/로그는 NFC. python3 unicodedata.normalize('NFC') 필수
 - [useReducer same-ref 반환](feedback_reducer_same_ref.md) — reducer가 매번 새 array 반환 + useEffect deps 새 객체 = OOM 무한 루프. 변경 없으면 same ref
-- [dogfooding-first 원칙](feedback_dogfooding_first.md) — 자율/복잡 워크플로우는 5분 dogfooding이 1시간 plan보다 결정적, sleep-build PR #30 직후 4 finding 발굴
-- [sleep-build Phase 1 운영 한계](project_sleep_build_runtime_limit.md) — 세션 alive 필요 (a) 세션 유지가 유일 검증 경로, Phase 2 CronCreate 진입 전까지
+- [dogfooding-first 원칙](feedback_dogfooding_first.md) — 자율/복잡 워크플로우는 5분 dogfooding이 1시간 plan보다 결정적, auto-build PR #30 직후 4 finding 발굴
+- [auto-build Phase 1 운영 한계](project_auto_build_runtime_limit.md) — 세션 alive 필요 (a) 세션 유지가 유일 검증 경로, Phase 2 CronCreate 진입 전까지
