@@ -1,7 +1,8 @@
 ---
 plan_id: 20260507-213353-sleep-build-phase2-ralph-vote
-status: in_progress
+status: done
 created: 2026-05-07T12:33:53Z
+completed: 2026-05-08T12:10:00Z
 hard_gate: brief
 source: brainstorm-file:.claude/memory/brainstorms/20260507-212317-sleep-build-phase2-ralph-loop-persona-vote.md
 related_phase1_plan: .claude/plans/20260504-194208-vibe-flow-sleep-build-phase1.md
@@ -143,3 +144,12 @@ related_phase1_plan: .claude/plans/20260504-194208-vibe-flow-sleep-build-phase1.
 | 시각 | 단계 | 상태 변경 | 비고 |
 |------|------|----------|------|
 | 2026-05-07T12:33:53Z | - | plan 생성 | 사용자 합의 (간략 등급, T1~T12) |
+| 2026-05-07T12:45:20Z | T1~T12 | PR #39 머지 | persona-mapping/persona-vote.sh + Ralph wrapper + safety token/iter cap + SKILL 갱신 + evals 9 케이스 |
+| 2026-05-07T13:17:07Z | rename | PR #40 머지 | sleep-build → auto-build 전면 식별자 변경 (본 plan의 파일 경로 모두 `core/skills/auto-build/`, `auto-build-safety.sh`, `AUTO_BUILD_*` env, `auto_build_*` jsonl로 이전) |
+| 2026-05-08T12:10:00Z | 메타 정리 | 본 PR | plan status done + Phase 1 메모리 → "auto-build 운영 한계 (Phase 2 머지 후)" 갱신 (시스템 메모리, 별 PR 외) |
+
+## 후속
+
+- 첫 실 야간 dogfooding은 **maker 본인 행위** — token cap 200k / max_iter 30 / vote confidence 0.5 / persona 일치율 70% 4 입력 calibration 후 Phase 3 진입 결정
+- Phase 3 = `CronCreate` 야간 스케줄 + retrospective vote 일치율 학습 (별도 brainstorm)
+- 시스템 메모리 갱신: `~/.claude/projects/.../memory/project_auto_build_runtime_limit.md` (Phase 1 → Phase 2 머지 후 잔존 한계 재기술)
