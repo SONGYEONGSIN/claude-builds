@@ -186,11 +186,27 @@ RED 단계에서 결정이 막힐 때 (예: "버튼 색상 라벤더 vs 블루",
 
 1. **카테고리 식별** — 질문 도메인 파악 (design / auth / perf / architecture / ui / test / docs 중 1)
 2. **vote 호출** — `bash core/skills/auto-build/scripts/persona-vote.sh <category> "<question>"` 실행
-3. **결과 파싱** — stdout `AGENT_DISPATCH:<persona>:<question>` 라인을 실제 `Agent` tool 호출로 변환:
+3. **결과 파싱 + dispatch (vote-only mode)** — stdout `AGENT_DISPATCH:<persona>:<question>` 라인을 실제 `Agent` tool 호출로 변환. `persona-vote.sh`가 stdout 처음에 emit한 `# === VOTE PROMPT TEMPLATE ===` 블록의 prompt를 사용:
+
    ```
-   각 AGENT_DISPATCH 라인 → Agent(subagent_type="<persona>", description="...vote", prompt="<question> + 컨텍스트")
-   각 persona가 결정 + confidence(0~1) + 사유 반환
+   Agent(
+     subagent_type="<persona>",
+     description="<category> vote",
+     prompt="""[VOTE-ONLY MODE — 자율 스킬 트리거 / 부산물 작업 금지]
+
+   질문: <question>
+
+   답변은 정확히 다음 4 라인 형식으로만 출력:
+   DECISION: <옵션 — A/B/C 등>
+   CONFIDENCE: <0.0~1.0>
+   REASON: <한 문장 50자 이내>
+   PERSONA: <persona id>
+
+   ⚠️ 4 라인 외 분석/설명/부산물/자동 스킬 발동 금지."""
+   )
    ```
+
+   **verbose 응답 처리** (F4): 일부 persona(예: ux-researcher)가 자기 도메인 스킬을 자율 트리거하여 task 외 부산물 생성 가능. orchestrator는 응답에서 `DECISION:`, `CONFIDENCE:`, `REASON:` 4 라인만 grep 추출하고 부산물은 무시. 단 verbose 발생 시 `run-log.sh start ${run_id} phase=vote_verbose persona=<p> tokens=<n>` 기록 — 후속 calibration 입력.
 4. **moderator 중재** — 마지막 `MODERATOR_DISPATCH:moderator:...` 라인을 Agent tool로 호출:
    ```
    Agent(subagent_type="moderator", prompt="<question> + 5 vote 결과 + confidence들 → 최종 결정 1줄 + 사유")
