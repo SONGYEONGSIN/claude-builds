@@ -460,12 +460,16 @@ for src in "$SCRIPT_DIR/core/hooks/"*.sh; do
 done
 chmod +x "$PROJECT_DIR/.claude/hooks/"*.sh
 
-# Skills 복사 (하위 디렉토리 포함)
+# Skills 복사 (루트 .md 파일 모두 + 하위 디렉토리 포함)
 echo "[3/$TOTAL_STEPS] Skills..."
 for skill_dir in "$SCRIPT_DIR/core/skills"/*/; do
   skill_name="$(basename "$skill_dir")"
   mkdir -p "$PROJECT_DIR/.claude/skills/$skill_name"
-  safe_copy "$skill_dir/SKILL.md" "$PROJECT_DIR/.claude/skills/$skill_name/SKILL.md"
+  # 루트 .md 파일 모두 복사 — SKILL.md / orchestrator.md 등
+  for md_file in "$skill_dir"*.md; do
+    [ -f "$md_file" ] || continue
+    safe_copy "$md_file" "$PROJECT_DIR/.claude/skills/$skill_name/$(basename "$md_file")"
+  done
   # references/, scripts/, evals/ 등 하위 디렉토리 복사
   for sub_dir in "$skill_dir"*/; do
     [ -d "$sub_dir" ] || continue
@@ -677,6 +681,16 @@ echo "  4. 필요 시 .claude/rules/ 에 프로젝트별 규칙 추가 (예: sup
 echo "  5. deny 목록에 프로젝트별 위험 명령 추가"
 echo "  6. 메트릭이 쌓이면 /metrics 로 대시보드 확인"
 echo "  7. /retrospective 로 정기 회고 실행"
+echo ""
+# /auto-build 등 working tree clean을 요구하는 자율 사이클 사전 안내
+if [ -d "$PROJECT_DIR/.git" ]; then
+  UNTRACKED_COUNT=$(cd "$PROJECT_DIR" && git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  if [ "${UNTRACKED_COUNT:-0}" -gt 0 ]; then
+    echo "⚠ working tree에 ${UNTRACKED_COUNT}개 untracked/modified 항목 — /auto-build 같은 자율 사이클 사용 전 commit 권장:"
+    echo "  git add . && git commit -m 'chore: vibe-flow setup'"
+    echo ""
+  fi
+fi
 if [ "$WITH_ORCHESTRATORS" = true ]; then
   echo "  8. orchestrators/README.md 참고하여 오케스트레이터 설정 완료"
 else
