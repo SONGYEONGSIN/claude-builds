@@ -139,6 +139,53 @@ case "$CMD" in
     echo "aborted: $TARGET_ID"
     ;;
 
+  next)
+    # status=queued 첫 entry id 출력 + status_update running 라인 append
+    acquire_lock
+    ID=$(jq -rs '
+      reduce .[] as $l ({};
+        if ($l | has("op")) and $l.op == "status_update" then
+          if .[$l.id] then .[$l.id].status = $l.new_status else . end
+        elif ($l | has("id")) and ($l | has("task")) then
+          .[$l.id] = $l
+        else . end
+      )
+      | to_entries
+      | map(.value)
+      | sort_by(.created_ts)
+      | map(select(.status == "queued"))
+      | if length > 0 then .[0].id else "" end
+    ' "$QUEUE_STORE" 2>/dev/null)
+
+    if [ -n "$ID" ]; then
+      jq -nc --arg id "$ID" --arg ts "$(iso_ts)" \
+        '{op:"status_update", id:$id, new_status:"running", ts:$ts}' >> "$QUEUE_STORE"
+      echo "$ID"
+    fi
+    release_lock
+    ;;
+
+  status-update)
+    TARGET_ID="${1:-}"
+    NEW_STATUS="${2:-}"
+    if [ -z "$TARGET_ID" ] || [ -z "$NEW_STATUS" ]; then
+      echo "queue status-update: <id> <new_status> 필수" >&2
+      exit 1
+    fi
+
+    LINE=$(jq -nc \
+      --arg id "$TARGET_ID" \
+      --arg new_status "$NEW_STATUS" \
+      --arg ts "$(iso_ts)" \
+      '{op:"status_update", id:$id, new_status:$new_status, ts:$ts}')
+
+    acquire_lock
+    echo "$LINE" >> "$QUEUE_STORE"
+    release_lock
+
+    echo "$NEW_STATUS: $TARGET_ID"
+    ;;
+
   clear)
     # 모든 status=queued entry에 대해 status_update aborted 일괄 append
     QUEUED_IDS=$(jq -rs '
@@ -177,15 +224,21 @@ queue.sh — /auto-build task 큐 CRUD
   queue.sh list [--all]
   queue.sh remove <id>
   queue.sh clear
+  queue.sh next                       # status=queued 첫 entry pop + running 마킹
+  queue.sh status-update <id> <status># 단일 status_update 라인 append (run-queue 전용)
 
 영속 store: $QUEUE_STORE (기본 .claude/memory/auto-build-queue.jsonl)
 USAGE
-    [ "$CMD" = "" ] && exit 1 || exit 0
+    if [ "$CMD" = "" ]; then
+      exit 1
+    else
+      exit 0
+    fi
     ;;
 
   *)
     echo "queue.sh: unknown command '$CMD'" >&2
-    echo "use: add | list | remove | clear" >&2
+    echo "use: add | list | remove | clear | next | status-update" >&2
     exit 1
     ;;
 esac
