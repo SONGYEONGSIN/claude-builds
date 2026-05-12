@@ -70,7 +70,20 @@
 
 ## 5. `/auto-build` 입력 문자열
 
-### 1차 cycle (vibe-flow에서 trigger)
+### 자율 사이클 cwd 가정 (SKILL.md "스킵 조건" 정합)
+
+각 cycle은 **단일 repo cwd**에서 trigger되어야 한다. `/auto-build` SKILL.md "스킵 (수동 사이클 권장)" 명시: *"multi-repo 동시 변경 (Ralph wrapper가 단일 repo 가정)"*. 본 spec의 cwd 가정:
+
+| Cycle | trigger cwd | 산출물 위치 | 선행 조건 |
+|-------|------------|----------|----------|
+| 1차 | vibe-flow source repo 자체 | vibe-flow source repo (hooks/skills/scripts + telemetry SKILL.md) | source repo `.claude/` self-install (`.claude/hooks/`, `.claude/skills/auto-build/` 배포) |
+| 2차 | vibe-flow-dashboard source repo | dashboard source repo (event-map.ts, dialogue-pool.json, event-map.test.ts) | dashboard repo에 vibe-flow setup 배포 |
+
+**부적합 trigger 위치**:
+- test-1 같은 외부 deploy 환경 (auto-build-test-1) — multi-repo 발생, F6 finding(run_id `20260512T104326Z-3b07` P2 abort) 참조
+- vibe-flow source의 self-install 미완료 상태 — P0.1 `deployment_missing` 발생 (`.claude/hooks/auto-build-safety.sh` 미배포)
+
+### 1차 cycle (vibe-flow source repo cwd에서 trigger)
 
 ```
 /auto-build "무엇을: vibe-flow의 .claude/events.jsonl에 commit_pushed 신규 이벤트 타입 emit + core/skills/telemetry/SKILL.md의 type→label 매핑에 commit_pushed→커밋 행 추가. payload는 type/ts(ISO 8601)/branch/subject(80자 truncate, NFC 정규화) 4 필드. emit 위치(Stop hook / git post-commit / /commit 스킬 내부)는 brainstorm 단계가 결정.
@@ -79,7 +92,7 @@
 성공: 임의 git commit 1회 → events.jsonl에 commit_pushed 1 라인 append + /telemetry 출력 label 매핑 표에 commit_pushed 카운트 ≥1 표시 + bash -n / jq empty 신규 sh/json 통과 + eval-regression CI PASS."
 ```
 
-### 2차 cycle (vibe-flow PR 머지 후 dashboard에서 trigger)
+### 2차 cycle (vibe-flow PR 머지 후 dashboard source repo cwd에서 trigger)
 
 ```
 /auto-build "무엇을: vibe-flow-dashboard의 event-map.ts에 commit_pushed 핸들러 추가 — developer 에이전트 typing 액션 + 새 dialogueKey commit 매핑. dialogue-pool.json의 developer 섹션에 commit dialogue 어레이(3개) 추가. event-map.test.ts에 commit_pushed 분기 1 케이스 추가.
@@ -112,6 +125,7 @@
 - **R3 dashboard 짝 PR 의존성**: 1차 머지 전 2차 시작 X. **완화** — 본 spec에 명시, dogfooding 시점에 maker 본인 강제.
 - **R4 NFC 누락**: 한글 commit subject가 macOS git에서 NFD로 들어올 수 있음. **완화** — task 입력에 NFC 명시, brainstorm 단계가 인지.
 - **R5 단발 cycle 실패 시 calibration 데이터 손실**: abort 시 jsonl `exit_reason` 명시되므로 데이터 0 아님. **완화** — abort branch 보존(safety hook 정책), morning review에서 calibration 회수.
+- **R6 trigger cwd 오선택 시 multi-repo abort**: 자율 사이클을 산출물 repo가 아닌 외부 deploy 환경(예: auto-build-test-1)에서 trigger 시 P1 brainstorm이 multi-repo 판정 → P2 `hard_gate_full_blocked` abort (실 원인 `multi_repo_task`). **완화** — section 5의 cwd 가정 표 준수. 1차 cycle은 vibe-flow source repo cwd에서, 2차 cycle은 dashboard source repo cwd에서 trigger. self-install 미완료 시 P0.1 `deployment_missing` 우선 abort로 안전 차단. F6 finding (run_id `20260512T104326Z-3b07`) 참조.
 
 ---
 
