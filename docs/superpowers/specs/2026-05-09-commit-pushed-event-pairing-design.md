@@ -73,13 +73,19 @@
 ### 1차 cycle (vibe-flow에서 trigger)
 
 ```
-/auto-build "vibe-flow .claude/events.jsonl에 commit_pushed 신규 이벤트 타입 추가. payload는 type/ts/branch/subject 4 필드, ts는 ISO 8601, subject는 80자 truncate, 한글 NFC 정규화. git commit 성공 시마다 1 라인 append. emit 위치(Stop hook / git post-commit / /commit 스킬 내부)는 brainstorm 단계가 결정. core/skills/telemetry/SKILL.md의 type→label 매핑 표에도 commit_pushed 추가."
+/auto-build "무엇을: vibe-flow의 .claude/events.jsonl에 commit_pushed 신규 이벤트 타입 emit + core/skills/telemetry/SKILL.md의 type→label 매핑에 commit_pushed→커밋 행 추가. payload는 type/ts(ISO 8601)/branch/subject(80자 truncate, NFC 정규화) 4 필드. emit 위치(Stop hook / git post-commit / /commit 스킬 내부)는 brainstorm 단계가 결정.
+누가: maker 본인 — vibe-flow Phase 2 머지 후 첫 실 task /auto-build dogfooding.
+왜 지금: Ralph loop + persona vote 머지(PR #39, #40) 후 합성 evals만 검증되어 실 cycle 데이터(token/iter/vote) 미수집. 4 calibration 입력 회수가 Phase 3 진입 결정 선결 조건.
+성공: 임의 git commit 1회 → events.jsonl에 commit_pushed 1 라인 append + /telemetry 출력 label 매핑 표에 commit_pushed 카운트 ≥1 표시 + bash -n / jq empty 신규 sh/json 통과 + eval-regression CI PASS."
 ```
 
 ### 2차 cycle (vibe-flow PR 머지 후 dashboard에서 trigger)
 
 ```
-/auto-build "vibe-flow-dashboard event-map.ts에 commit_pushed 핸들러 추가. developer 에이전트 typing 액션 + 새 dialogueKey commit 매핑. dialogue-pool.json의 developer 섹션에 commit dialogue 어레이 신규(3 개). event-map.test.ts에 commit_pushed 분기 1 케이스. vibe-flow PR (commit_pushed 이벤트 추가) 머지 후 짝 PR로 진행."
+/auto-build "무엇을: vibe-flow-dashboard의 event-map.ts에 commit_pushed 핸들러 추가 — developer 에이전트 typing 액션 + 새 dialogueKey commit 매핑. dialogue-pool.json의 developer 섹션에 commit dialogue 어레이(3개) 추가. event-map.test.ts에 commit_pushed 분기 1 케이스 추가.
+누가: maker 본인 — vibe-flow ↔ dashboard 짝 dogfooding 2차 cycle.
+왜 지금: vibe-flow 1차 cycle(commit_pushed emit) 머지 후 짝 PR로 dashboard 매핑 미완 상태 회피.
+성공: vitest event-map.test.ts 신규 케이스 PASS + 기존 케이스 회귀 0 + 'commit' dialogueKey가 dialogue-pool.json에 실재 + TypeScript 타입 에러 0 + vibe-flow의 commit_pushed 이벤트 도착 시 developer typing + commit dialogue 표시."
 ```
 
 ---
