@@ -53,6 +53,6 @@ originSessionId: 2026-05-12-inspector-refactor
 ## 부채 (장기)
 
 - ListPattern 1220줄 (변동 +3, hotfix로 약간 증가)
-- /_global-error Next.js 16 빌드 실패 (main에서도 발생)
+- ~~/_global-error Next.js 16 빌드 실패~~ — **false positive 회수**. NODE_ENV=development shell leak 시에만 발생. CI는 항상 통과. PR #81에서 커스텀 한글 에러 페이지로 UX 개선 + 회고 문서화
 - 사이드바 mock 도메인 count hardcode 잔존 (DB 없는 도메인)
 - receivables count hardcode 7건 (Excel 외부)

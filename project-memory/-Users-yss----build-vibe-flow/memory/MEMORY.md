@@ -7,4 +7,5 @@
 - [auto-build 운영 한계 (Phase 2 머지 후)](project_auto_build_runtime_limit.md) — Ralph loop + vote 자동화는 머지, 세션 alive는 여전 필요(Phase 3 cron 전까지). 첫 실 task dogfooding 보류
 - [auto-build는 anytime 도구](feedback_auto_build_anytime.md) — "야간 한정" 프레임 회피, 사용자가 언제든 트리거 가능한 자율 사이클 도구로 취급
 - [setup.sh 갭 — auto-build P0 차단 (resolved PR #49)](project_setup_sh_gaps_p0_block.md) — 첫 P0 abort 원인. PR #49로 fix. history 보존
-- [첫 dogfooding cycle 완주 + 3 finding](project_first_dogfooding_cycle_findings.md) — Cycle 2 success (P5 commit). token/iter 일부 calibration. F1 4문항 강제, F2 .gitignore runtime 패턴, F3 한글 SLUG — 3 후속 PR
+- [auto-build dogfooding 7 cycle 완주 + F1~F9 해소](project_first_dogfooding_cycle_findings.md) — 짝 cycle 6(vibe-flow #58)/7(dashboard #17) 완주, F1~F9 모두 resolved (PRs #50/#51/#54-#59), Phase 3 진입 준비
+- [Phase 3 cron scheduler brainstorm (2026-05-12 작성)](../../.../vibe-flow/.claude/memory/brainstorms/20260512-202958-vibe-flow-phase3-cron-scheduler.md) — 4 결정 채택(schedule 스킬/N=3 cap/3.0+3.1 분할/dashboard 별 cycle). 다음 세션 진입점 = PR-A queue 슬래시 스킬 cycle 8

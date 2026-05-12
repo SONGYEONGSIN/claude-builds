@@ -14,3 +14,4 @@
 - [메뉴별 권한 — CLOSED](project_menu_permission_next.md) — PR #16/#17로 클로즈
 - [다음 세션 시드 — InspectorListBody refactor epic 부분 완료](project_next_session_seed.md) — 2026-05-12 종료, PR #75~#78 stacked 미머지, InspectorListBody 800줄 달성, ListPattern 미손
 - [Stacked PR 4개 임계점](feedback_stacked_pr_threshold.md) — 5개 이상 stacked PR 누적 시 epic 조기 종료 자연스러움. 매몰비용 편향 회피
+- [NODE_ENV leak false positive](feedback_nodeenv_leak_falsepositive.md) — 빌드 실패 백로그 주장 만나면 CI 실제 상태부터 검증. NODE_ENV=development leak 시 prerender 깨짐
