@@ -192,6 +192,33 @@
       "expected": {
         "stdout_min": "4"
       }
+    },
+    {
+      "id": "queue-next-marks-running",
+      "description": "Phase 3.0 PR-B — queue.sh next가 queued 첫 entry의 id 출력 + status_update running 라인 append",
+      "setup": {
+        "env": {
+          "QUEUE_STORE": "/tmp/auto-build-queue-eval-next.jsonl"
+        }
+      },
+      "input": "rm -f /tmp/auto-build-queue-eval-next.jsonl && bash core/skills/auto-build/scripts/queue.sh add 'next task' >/dev/null && ID=$(bash core/skills/auto-build/scripts/queue.sh next) && tail -1 /tmp/auto-build-queue-eval-next.jsonl | jq -e --arg id \"$ID\" '.op == \"status_update\" and .new_status == \"running\" and .id == $id' >/dev/null && echo OK",
+      "expected": {
+        "stdout_contains": "OK"
+      }
+    },
+    {
+      "id": "run-queue-dryrun-done",
+      "description": "Phase 3.0 PR-B — run-queue.sh DRYRUN=1 시 1 entry add 후 1 cycle 진행 → done 라인 append + list --all에서 done 표시",
+      "setup": {
+        "env": {
+          "QUEUE_STORE": "/tmp/auto-build-queue-eval-runq.jsonl",
+          "AUTO_BUILD_QUEUE_DRYRUN": "1"
+        }
+      },
+      "input": "rm -f /tmp/auto-build-queue-eval-runq.jsonl && bash core/skills/auto-build/scripts/queue.sh add 'runq task' >/dev/null && bash core/skills/auto-build/scripts/run-queue.sh >/dev/null && bash core/skills/auto-build/scripts/queue.sh list --all | grep -c done",
+      "expected": {
+        "stdout_min": "1"
+      }
     }
   ],
   "out_of_scope": [
