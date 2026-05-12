@@ -169,6 +169,126 @@ else
 fi
 teardown
 
+# ── Test 6: next — queued 첫 entry pop + running 마킹 ──────
+echo "Test 6: next pops first queued entry"
+setup_fixture
+bash "$QUEUE" add "first task" >/dev/null
+sleep 1
+bash "$QUEUE" add "second task" >/dev/null
+NEXT_ID=$(bash "$QUEUE" next)
+FIRST_ID=$(head -1 "$QUEUE_STORE" | jq -r '.id')
+if [ "$NEXT_ID" = "$FIRST_ID" ]; then
+  echo "  ✓ 6.1 next returns first queued id"
+  PASS=$((PASS + 1))
+else
+  echo "  ✗ 6.1 expected $FIRST_ID, got $NEXT_ID"
+  FAIL=$((FAIL + 1))
+fi
+LAST=$(tail -1 "$QUEUE_STORE")
+assert_jq_eq "6.2 status_update running 라인 append" '.new_status' "running" "$LAST"
+assert_jq_eq "6.3 id 일치" '.id' "$NEXT_ID" "$LAST"
+# 빈 queue: 모든 queued → running 후, next 호출 시 empty + exit 0
+bash "$QUEUE" next >/dev/null
+EMPTY=$(bash "$QUEUE" next)
+if [ -z "$EMPTY" ]; then
+  echo "  ✓ 6.4 empty queue: next returns empty"
+  PASS=$((PASS + 1))
+else
+  echo "  ✗ 6.4 expected empty, got '$EMPTY'"
+  FAIL=$((FAIL + 1))
+fi
+teardown
+
+# ── Test 7: run-queue DRYRUN=1 → 1 entry done ──────────────
+RUN_QUEUE="$REPO_ROOT/core/skills/auto-build/scripts/run-queue.sh"
+echo "Test 7: run-queue DRYRUN done"
+setup_fixture
+bash "$QUEUE" add "dryrun task" >/dev/null
+AUTO_BUILD_QUEUE_DRYRUN=1 QUEUE_STORE="$QUEUE_STORE" QUEUE_LOCK_DIR="$QUEUE_LOCK_DIR" \
+  bash "$RUN_QUEUE" >/dev/null 2>&1
+# entry id의 최종 status는 done
+ALL=$(bash "$QUEUE" list --all)
+if echo "$ALL" | grep -q "done.*dryrun task"; then
+  echo "  ✓ 7.1 entry status done (DRYRUN)"
+  PASS=$((PASS + 1))
+else
+  echo "  ✗ 7.1 done 상태 미반영"
+  echo "    list --all: $ALL"
+  FAIL=$((FAIL + 1))
+fi
+teardown
+
+# ── Test 8: max cycle cap (4 add, MAX=3, 1 queued 잔존) ────
+echo "Test 8: max cycle cap"
+setup_fixture
+bash "$QUEUE" add "a" >/dev/null; sleep 1
+bash "$QUEUE" add "b" >/dev/null; sleep 1
+bash "$QUEUE" add "c" >/dev/null; sleep 1
+bash "$QUEUE" add "d" >/dev/null
+AUTO_BUILD_QUEUE_DRYRUN=1 AUTO_BUILD_QUEUE_MAX_CYCLES=3 \
+  QUEUE_STORE="$QUEUE_STORE" QUEUE_LOCK_DIR="$QUEUE_LOCK_DIR" \
+  bash "$RUN_QUEUE" >/dev/null 2>&1
+ALL=$(bash "$QUEUE" list --all)
+DONE_COUNT=$(echo "$ALL" | grep -cE "done" || true)
+QUEUED_REMAIN=$(bash "$QUEUE" list | wc -l | tr -d ' ')
+if [ "$DONE_COUNT" -eq 3 ] && [ "$QUEUED_REMAIN" -eq 1 ]; then
+  echo "  ✓ 8.1 3 done + 1 queued remaining"
+  PASS=$((PASS + 1))
+else
+  echo "  ✗ 8.1 expected 3 done + 1 queued, got $DONE_COUNT done + $QUEUED_REMAIN queued"
+  echo "    list --all: $ALL"
+  FAIL=$((FAIL + 1))
+fi
+teardown
+
+# ── Test 9: cycle abort 즉시 종료 ──────────────────────────
+echo "Test 9: cycle abort → 즉시 종료"
+setup_fixture
+bash "$QUEUE" add "first will abort" >/dev/null; sleep 1
+bash "$QUEUE" add "second should remain queued" >/dev/null
+AUTO_BUILD_QUEUE_DRYRUN=1 AUTO_BUILD_QUEUE_DRYRUN_FAIL=1 \
+  QUEUE_STORE="$QUEUE_STORE" QUEUE_LOCK_DIR="$QUEUE_LOCK_DIR" \
+  bash "$RUN_QUEUE" >/dev/null 2>&1
+ALL=$(bash "$QUEUE" list --all)
+ABORTED=$(echo "$ALL" | grep -cE "aborted" || true)
+QUEUED_REMAIN=$(bash "$QUEUE" list | wc -l | tr -d ' ')
+if [ "$ABORTED" -eq 1 ] && [ "$QUEUED_REMAIN" -eq 1 ]; then
+  echo "  ✓ 9.1 1 aborted + 1 queued remaining (abort halt)"
+  PASS=$((PASS + 1))
+else
+  echo "  ✗ 9.1 expected 1 aborted + 1 queued, got $ABORTED aborted + $QUEUED_REMAIN queued"
+  echo "    list --all: $ALL"
+  FAIL=$((FAIL + 1))
+fi
+teardown
+
+# ── Test 10: DRYRUN=0 (미설정) → entry 보존 + exit 1 ────────
+echo "Test 10: DRYRUN=0 — entry 보존 (소실 방지)"
+setup_fixture
+bash "$QUEUE" add "must not be aborted" >/dev/null
+# DRYRUN 미설정 + 실 trigger 미구현 → exit 1 + entry는 running 그대로
+QUEUE_STORE="$QUEUE_STORE" QUEUE_LOCK_DIR="$QUEUE_LOCK_DIR" \
+  bash "$RUN_QUEUE" >/dev/null 2>&1
+EXIT_CODE=$?
+if [ "$EXIT_CODE" -eq 1 ]; then
+  echo "  ✓ 10.1 exit 1 (실 trigger 미구현 신호)"
+  PASS=$((PASS + 1))
+else
+  echo "  ✗ 10.1 expected exit 1, got $EXIT_CODE"
+  FAIL=$((FAIL + 1))
+fi
+# entry status는 running (aborted 아님)
+ALL=$(bash "$QUEUE" list --all)
+if echo "$ALL" | grep -q "running.*must not be aborted"; then
+  echo "  ✓ 10.2 entry running 보존 (aborted 회피)"
+  PASS=$((PASS + 1))
+else
+  echo "  ✗ 10.2 entry aborted 마킹 발생 (소실)"
+  echo "    list --all: $ALL"
+  FAIL=$((FAIL + 1))
+fi
+teardown
+
 # ── 결과 ───────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────────"
