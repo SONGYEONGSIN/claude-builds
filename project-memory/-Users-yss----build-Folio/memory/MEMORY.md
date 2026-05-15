@@ -12,6 +12,13 @@
 - [조직·권한 DB 연동 — CLOSED 2026-05-10](project_team_db_integration.md) — operators 테이블 + 4상태 enum epic 완료. reference 보존 (Supabase 링크 / 파일 위치)
 - [Supabase 마이그레이션 운영 함정](feedback_supabase_migration_gotchas.md) — SQL Editor paste / RLS+GRANT / PostgREST cache / 부분 실행 / `language sql` $$ 파서 / service_role GRANT
 - [메뉴별 권한 — CLOSED](project_menu_permission_next.md) — PR #16/#17로 클로즈
-- [다음 세션 시드 — InspectorListBody refactor epic 부분 완료](project_next_session_seed.md) — 2026-05-12 종료, PR #75~#78 stacked 미머지, InspectorListBody 800줄 달성, ListPattern 미손
+- [다음 세션 시드 — PR #98 + SharePoint 계약 + 대학 연락처 epic 대기](project_next_session_seed.md) — 2026-05-15 종료, PR #98 (services 검색 UX + chunk fetch + service_id 재부여) 미머지, SharePoint/대학연락처 epic 백로그
 - [Stacked PR 4개 임계점](feedback_stacked_pr_threshold.md) — 5개 이상 stacked PR 누적 시 epic 조기 종료 자연스러움. 매몰비용 편향 회피
 - [NODE_ENV leak false positive](feedback_nodeenv_leak_falsepositive.md) — 빌드 실패 백로그 주장 만나면 CI 실제 상태부터 검증. NODE_ENV=development leak 시 prerender 깨짐
+- [Hydration mismatch fix가 lint 룰에 차단](feedback_hydration_mismatch_lint_block.md) — useState+useEffect 패턴은 react-compiler 룰 위반. 대안: dynamic({ssr:false}) 권장 또는 useSyncExternalStore
+- [services-import.mjs 재실행 시 service_id 덮어쓰기 위험](feedback_services_import_overwrite_risk.md) — 마이그레이션으로 재부여한 service_id가 재import 시 CSV 원본으로 되돌아감. 재import 안 함 또는 새 export 후 source 교체
+- [목록 페이지 페이지네이션은 ListPagination 재사용](feedback_list_pagination_pattern.md) — src/components/common/ListPagination.tsx 단일 컴포넌트. services/contracts/향후 도메인 공유. 별도 도메인 Pagination 만들지 말 것
+- [목록 페이지 검색 input은 ListSearch 재사용](feedback_list_search_design.md) — src/components/common/ListSearch.tsx (LogPattern 디자인: 돋보기 SVG + border + bg-washi-raised). 모든 list 도메인 공유
+- [목록 페이지 select(필터)는 ListSelect 재사용](feedback_list_select_design.md) — src/components/common/ListSelect.tsx (SettingsPattern 디자인: border + bg-transparent + focus:border-vermilion). 모든 list 도메인 공유
+- [본인 필터 chip은 ScopeChips 재사용](feedback_scope_chips_pattern.md) — src/components/common/ScopeChips.tsx ("전체 (N) | 내 X" 토글, ?mine=true). mineLabel prop으로 도메인 customize
+- [인스펙터 EditForm 대학명 = 검색 dropdown 기본](feedback_editform_university_search.md) — 자유 입력 X. universityNameSuggestions prop으로 source 전달 (services.university_name distinct 표준)

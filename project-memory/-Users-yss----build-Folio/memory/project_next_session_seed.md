@@ -1,78 +1,99 @@
 ---
-name: 다음 세션 시드 — 2026-05-13 (list-variants registry 9 variant 슬롯 완비)
-description: PR #83~#86 머지. ListPattern 1220 → 452 (-63%) + InspectorListBody 787 → 128 (-84%). registry 9 variant 모두 View/EditForm/Table/Filters/blank 슬롯 완비
+name: 다음 세션 시드 — 2026-05-15 (PR #98 미머지 / SharePoint 계약 epic + 대학 연락처 epic 대기)
+description: PR #98 (services 검색 UX + chunk fetch + service_id 재부여) 미머지. 두 큰 epic 사용자 요청 대기 (SharePoint 계약서, 대학 연락처). hydration mismatch는 여전 백로그
 type: project
-originSessionId: 2026-05-13-inspector-listbody-extract
+originSessionId: 2026-05-15-services-search-renumber
 ---
 
 ## 종료 시점
 
-2026-05-13 06:55 KST. main HEAD `55d8514` (PR #86). working tree clean.
+2026-05-15 자정 부근 KST. branch `fix/services-search-renumber` (PR #98) 미머지. main HEAD `5df341f`.
 
-## 이번 세션 결과 — InspectorListBody refactor + ListPattern refactor 두 epic 완주
+## 이번 세션 결과
 
-### Epic 1: ListPattern Table refactor (PR #83~#85, 2026-05-12)
-브레인스토밍: `.claude/memory/brainstorms/20260512-205059-listpattern-table-refactor.md`
-플랜: `.claude/plans/20260512-211826-listpattern-table-refactor.md` (status: completed)
+services PR-1 검증 트랙 이어가는 중 검색·정렬·시퀀스 3 이슈 발견 → fix PR로 정리.
 
-| Phase | 범위 | PR | 결과 |
-|-------|------|-----|------|
-| 1 | cohort 패턴 확립 + registry 슬롯 확장 | #83 머지 | ListPattern 1220 → 1106 |
-| 2 | 7 variant Table 일괄 (team/post/schedule/my-todo/receivables/ai-work/default) | #84 머지 | 1106 → **452** (-768, **63% 감소**) |
-| 3 | plan completion docs | #85 머지 | — |
+### PR #98 변경 요약
 
-### Epic 2: InspectorListBody View/EditForm 분리 (PR #86, 2026-05-13)
-브레인스토밍: `.claude/memory/brainstorms/20260513-inspectorlistbody-view-editform-extract.md`
-
-| 변경 | 결과 |
+| 영역 | 변경 |
 |------|------|
-| post/View+EditForm (variant prop 분기 공유) | InspectorListBody dispatcher만 잔존 |
-| schedule/EditForm + my-todo/EditForm + default/View+EditForm | 모두 list-variants 디렉토리 등록 |
-| registry 4 신규 슬롯 | 9 variant 모두 View/EditForm/Table/Filters/blank 슬롯 완비 |
-| InspectorListBody.tsx 787 → **128** | -659, **84% 감소** |
+| EditForm 대학명 검색 | 빈 query 표시 / 정확 일치 entry 포함 / justSelected state로 선택 후 close |
+| page.tsx universityKeys | chunk fetch (Supabase 1000 limit + PostgREST partial response 회피, totalFetched ≥ total 종료) |
+| page-meta-config | services 헤드라인 "서비스사이클 — 서비스" (다른 메뉴 derive 형식 일관) — outdated mockup test 1 fail 동시 해결 |
+| 마이그레이션 20260522 | 학교키(앞 4자리) 유지 + 학교별 write_start_at asc 정렬 후 시퀀스 001부터 재부여. **prod 적용 완료** |
 
-## 메트릭 (두 epic 합)
+### 검증 흔적
 
-| 파일 | Before | After | 감소 |
-|------|--------|-------|------|
-| ListPattern.tsx | 1220 | 452 | -63% |
-| InspectorListBody.tsx | 787 | 128 | -84% |
-| **합계 (두 핵심 dispatcher)** | **2007** | **580** | **-71%** |
-
-테스트: 720 unit GREEN 전수 유지 (통합 테스트로 dispatcher 라우팅 회귀 자동 감지)
+- EditForm test 8건 PASS (RED→GREEN 신규 2건)
+- 전체 unit test 844 PASS (이전 1 fail 동시 해결)
+- typecheck 0 / lint 0 error
+- prod에서 "경찰" 검색 시 dropdown 3건 모두 노출 확인 (사용자 visual 검증)
+- service_id 재부여 마이그레이션 prod 적용 + 검증 SQL 확인 (사용자)
 
 ## 학습 (재사용 자산)
 
-1. **TDD hook strict + surgical refactor 충돌** — `.claude/settings.local.json`의 `CLAUDE_TDD_ENFORCE=strict`는 type-only 변경(types.ts)이나 cross-directory test layout(`inspector/__tests__/list-variants/`)을 인식 못 함. epic 동안 `warn`으로 잠시 변경 후 종료 시 원복 (두 epic에서 모두 적용)
-2. **JSX에서 `<obj[key].Comp />` 직접 사용 불가** — TypeScript JSX는 컴포넌트 이름이 PascalCase 변수여야 함. `const X = obj[key].Comp; return <X .../>` 패턴 필요
-3. **Registry union narrowing + optional slot** — `entry?.Slot`는 union 분기 narrow 실패. `"Slot" in entry && entry.Slot` 가드 패턴 필요
-4. **variant-specific prop을 요구하는 컴포넌트는 dispatcher 분기** — PostView/PostForm은 variant prop이 필수. registry slot에 넣지 않고 InspectorListBody/ListPattern에서 직접 분기 처리 (현재 패턴 일관)
-5. **Dispatch<SetStateAction<ListRow>> 시그니처 통일** — variant EditForm Props.setRow는 EditFormProps 시그니처에 맞추어야 registry 매핑 시 호환
-6. **거대 dispatcher 분해 epic 패턴** — 1) brainstorm 4문항 → 2) plan + planner agent → 3) 패턴 확립 PR (1 variant) → 4) 일괄 분리 PR (n variant) → 5) 잔여 정리 PR. ListPattern (2 PR) + InspectorListBody (1 PR)로 검증됨
-7. **stacked PR 4개 임계점** — 5+ 누적은 epic 조기 종료 신호. 패턴 확립 후 일괄 PR로 안전 가속 가능
+### 1. Supabase JS chunk fetch — PostgREST partial response 함정
+`pageSize: 5000` 지정해도 PostgREST `Max-Rows` 기본 1000 cap. 또한 chunk fetch 시 *partial response* (range 1000 요청에 996 반환) 가능. 종료 조건은 `chunk.length < CHUNK`가 아니라 `totalFetched >= total` (listServices 반환의 `total` 활용).
 
-## 미진 / 백로그 (다음 epic 후보)
+### 2. Combobox 자기 자신 제외 로직 분리
+filter에서 `u.value !== input value`로 자기 자신 제외하면 *검색 중 정확 일치 entry도 사라짐*. 표준 패턴은 `justSelected` state로 분리 — 선택 시 true, 입력 시 false. dropdown 표시 조건 `!justSelected && matches.length > 0`.
 
-- **ListRow 타입 분리** — 26+ 파일이 `import type { ListRow } from "../patterns/ListPattern"`. types.ts hoist (작은 mini-PR, ~1일)
-- **variantRegistry 슬롯 타입 hoist** — 현재 inline `TableSlotProps`/`PostTableProps`/`MyTodoTableProps`. types.ts로 hoist
-- **사이드바 mock 도메인 count hardcode** — DB 없는 도메인의 count 표기
-- **receivables count hardcode 7건 (Excel 외부)** — 데이터 소스 미확정
-- **isoToLocalKst/localKstToIso 중복** — schedule/EditForm + my-todo/EditForm에 사본 존재. lib/datetime.ts 등으로 hoist 가능 (작은 PR)
+### 3. 헤드라인 derive 일관성
+다른 메뉴(alerts/schedule/my-todo 등)는 `accent: 시점 표현 / title: 명세 표현`. 그러나 services는 사이드바 그룹·메뉴 라벨과 일치 형식으로 사용. 사용자 요청은 일관 자동 derive 형식. PR #98에서 정리.
+
+### 4. service_id 재부여 마이그레이션 패턴
+UNIQUE 컬럼 일괄 UPDATE 시 *2단계 처리* — 음수 임시값(`update set service_id = -service_id`)으로 충돌 회피 후 새 값 적용. CTE row_number() + partition by + order by로 정렬 기준 명시. `left(service_id::text, 4)::bigint`로 학교키 추출 (정수 division 아님 — 6/7자리 섞일 때 자릿수 일관 안 됨).
+
+### 5. services-import.mjs 재실행 위험
+import 스크립트가 CSV 원본 service_id를 그대로 사용. 마이그레이션 후 재import 시 원본 값으로 *덮어쓰여짐*. 재import 안 하거나, 재부여된 service_id로 CSV export 후 import. **[[feedback_services_import_overwrite_risk]] 학습 메모리 후보**
+
+## 다음 세션 즉시 처리
+
+### 1. PR #98 머지 + 후속
+- prod main에 머지
+- 사용자가 검증 잔여 진행 (필터/viewer 검증은 task #4, #5 pending)
+
+### 2. SharePoint 계약서 → "계약" 메뉴 epic (큰 작업)
+- 사용자 요청 (이번 세션 후반)
+- env에 `SHAREPOINT_CONTRACTS_ITEM_ID=01TGOQVTS6Z2RN6CAAJREZVSUYWY762UNC` 설정 완료
+- 사이드바 "계약" 메뉴(slug `contracts`) 이미 등록
+- Microsoft Graph 인프라 재사용: `src/lib/microsoft/` + `src/features/receivables/queries.ts`가 SharePoint Excel workbook fetch 패턴 보유
+- 시트 구조 (4년제~기타) 미상 — Graph API로 자동 분석 또는 사용자 명세 필요
+- data flow 결정 필요: SharePoint 직접 read (receivables 패턴) vs Folio DB ETL (services 패턴) vs 하이브리드
+- brainstorm 진입 권장
+
+### 3. 대학 연락처 도메인 구성 (별도 epic)
+- 사용자 요청 (이번 세션 초반)
+- 사이드바 "대학 연락처" 메뉴 이미 등록 (src/app/dashboard/_data.ts:92)
+- mockup 이미지 명세: 활성화/고객명/직함/대학명/소속부서/직책/관리등급(A~D)/관계등급/연락처(휴대폰·내선)/이메일
+- DB 테이블 + RLS + list-variants 슬롯 신설
+- 대학명 services 도메인 FK 연동 검토 가치
+
+## 미해결 백로그 (시드 누적)
+
+### Hydration mismatch (직전 세션부터 누적)
+- PageTabs `OpenTabsProvider` localStorage SSR/CSR 차이 — useState(loadInitial) 패턴 mismatch
+- ServicesTable `deadlineBadge`의 Date.now() (잠재적 mismatch — 표면화는 PageTabs가 먼저)
+- 우리 fix 시도(useState+useEffect) → react-compiler ESLint 룰 위반 차단
+- **권장 fix**: `dynamic({ ssr: false })` 패턴으로 PageTabs wrap (변경량 적음). 또는 `useSyncExternalStore` (정공법 — store 구조 변경)
+- [[feedback_hydration_mismatch_lint_block]]
+
+### 마이그레이션 prod 미적용
+- backup 4 파일 (20260519~20260519d)
+- backup-services-fk 3 파일 (20260521~20260521c)
+- 이번 세션의 20260522는 prod 적용됨
+
+### 기존 백로그 보존
+- isoToLocalKst/localKstToIso 3 파일 중복 → `lib/datetime.ts` hoist
+- 사이드바 services count "179" 하드코드 (실 import 후 2511로 동기 필요)
+- receivables count hardcode 7건 (Excel 외부)
 
 ## 운영 상태
 
-- main HEAD `55d8514`
-- 모든 PR (#83~#86) 머지, 미머지 0
+- branch: `fix/services-search-renumber` (PR #98 미머지)
+- main HEAD: `5df341f`
 - working tree clean
-- settings.local.json CLAUDE_TDD_ENFORCE 원복 완료 (warn → strict)
-- lint clean (pre-existing _omit warning 11건만)
-- 720 unit test GREEN, typecheck pass
-
-## 부채 (장기)
-
-- ListRow 타입이 ListPattern.tsx에 살아있음 (별도 mini-PR 후보)
-- isoToLocalKst/localKstToIso 중복 정의 (schedule + my-todo EditForm)
-- 사이드바 mock 도메인 count hardcode 잔존
-- receivables count hardcode 7건 (Excel 외부)
-- ~~ListPattern 1220줄~~ → **452줄** (해결)
-- ~~InspectorListBody 787줄~~ → **128줄** (해결)
+- 단위 테스트 844 PASS / 0 fail
+- typecheck 0 / lint 0 error (12 warning 기존)
+- list-variants 11 도메인 슬롯 완비
+- services 도메인: 2511 row import 완료 + service_id 재부여 완료
